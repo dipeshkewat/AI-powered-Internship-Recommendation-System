@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  # ── FastAPI backend ──────────────────────────────────────────────────────────
+  api:
+    build: .
+    container_name: internmatch_api
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017
+      - MONGODB_DB_NAME=internmatch
+    volumes:
+      - ./app/ml/artifacts:/app/app/ml/artifacts  # persist trained model
+      - ./uploads:/app/uploads
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── MongoDB ──────────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7.0
+    container_name: internmatch_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Mongo Express (optional dev UI) ──────────────────────────────────────────
+  mongo-express:
+    image: mongo-express:1.0
+    container_name: internmatch_mongo_express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    depends_on:
+      - mongo
+    profiles: ["dev"]      # only starts with: docker compose --profile dev up
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
