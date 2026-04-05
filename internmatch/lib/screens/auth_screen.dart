@@ -117,12 +117,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               const SizedBox(height: 24),
 
               // Title
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Welcome back 👋',
                       style: TextStyle(
                         color: AppColors.textPrimary,
@@ -131,8 +131,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    const Text(
+                    SizedBox(height: 6),
+                    Text(
                       'Sign in to access your recommendations',
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -359,17 +359,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   }
 
   Widget _divider() {
-    return Row(
+    return const Row(
       children: [
-        const Expanded(child: Divider(color: AppColors.border)),
+        Expanded(child: Divider(color: AppColors.border)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: const Text(
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
             'or continue with',
             style: TextStyle(color: AppColors.textMuted, fontSize: 12),
           ),
         ),
-        const Expanded(child: Divider(color: AppColors.border)),
+        Expanded(child: Divider(color: AppColors.border)),
       ],
     );
   }

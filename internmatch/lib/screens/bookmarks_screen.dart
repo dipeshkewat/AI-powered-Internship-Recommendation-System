@@ -83,13 +83,13 @@ class _EmptyBookmarks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.bookmark_border,
+          Icon(Icons.bookmark_border,
               color: AppColors.textMuted, size: 52),
-          const SizedBox(height: 14),
-          const Text(
+          SizedBox(height: 14),
+          Text(
             'No bookmarks yet',
             style: TextStyle(
               color: AppColors.textPrimary,
@@ -97,8 +97,8 @@ class _EmptyBookmarks extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          SizedBox(height: 6),
+          Text(
             'Tap the bookmark icon on any internship\nto save it here',
             style: TextStyle(color: AppColors.textMuted, fontSize: 13),
             textAlign: TextAlign.center,

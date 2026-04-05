@@ -50,10 +50,10 @@ class WelcomeScreen extends StatelessWidget {
                 const Spacer(flex: 2),
 
                 // Headline
-                Column(
+                const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Find internships\ntailored to you.',
                       style: TextStyle(
                         color: AppColors.textPrimary,
@@ -63,8 +63,8 @@ class WelcomeScreen extends StatelessWidget {
                         letterSpacing: -0.8,
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    const Text(
+                    SizedBox(height: 14),
+                    Text(
                       'AI-powered matching using your skills, CGPA,\nand interests — not just keywords.',
                       style: TextStyle(
                         color: AppColors.textSecondary,
@@ -81,10 +81,10 @@ class WelcomeScreen extends StatelessWidget {
                 const Spacer(flex: 1),
 
                 // Feature pills
-                Wrap(
+                const Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: const [
+                  children: [
                     _FeaturePill(
                         label: '🤖 ML Matching', color: AppColors.primary),
                     _FeaturePill(

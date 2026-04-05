@@ -473,12 +473,12 @@ class _EmptyApplications extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.inbox_outlined, color: AppColors.textMuted, size: 52),
-          const SizedBox(height: 14),
-          const Text(
+          Icon(Icons.inbox_outlined, color: AppColors.textMuted, size: 52),
+          SizedBox(height: 14),
+          Text(
             'No applications yet',
             style: TextStyle(
               color: AppColors.textPrimary,
@@ -486,8 +486,8 @@ class _EmptyApplications extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          SizedBox(height: 6),
+          Text(
             'When you apply for an internship,\nit will show up here',
             style: TextStyle(color: AppColors.textMuted, fontSize: 13),
             textAlign: TextAlign.center,
