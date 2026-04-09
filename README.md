@@ -289,17 +289,12 @@ Contributions, issues, and feature requests are welcome!
 ## 👨‍💻 Author
 
 **Dipesh** — Junior AI Trainee @ Compozent | Engineering Student @ SLRTCE, Mumbai
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/YOUR_PROFILE)
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/YOUR_USERNAME)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+**Chirag** — Junior AI Trainee @ Compozent | Engineering Student @ SLRTCE, Mumbai
+**Suraj** — Junior AI Trainee @ Compozent | Engineering Student @ SLRTCE, Mumbai
+**Ruchika** — App and Web Developer @ Compozent | Engineering Student @ SLRTCE, Mumbai
 
 ---
+
 
 <div align="center">
   <sub>Built with 💙 using Flutter + FastAPI + scikit-learn</sub>
