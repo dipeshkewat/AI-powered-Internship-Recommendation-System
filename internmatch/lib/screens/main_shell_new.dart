@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_router.dart';
 
 class MainShellNew extends StatefulWidget {
-  const MainShellNew({Key? key}) : super(key: key);
+  const MainShellNew({super.key});
 
   @override
   State<MainShellNew> createState() => _MainShellNewState();
@@ -102,7 +104,7 @@ class _MainShellNewState extends State<MainShellNew> {
 
 // Dashboard Screen
 class DashboardScreenNew extends StatelessWidget {
-  const DashboardScreenNew({Key? key}) : super(key: key);
+  const DashboardScreenNew({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -165,28 +167,28 @@ class DashboardScreenNew extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.border),
                 ),
-                child: TextField(
+                child: const TextField(
                   decoration: InputDecoration(
                     hintText: 'Search internships, companies...',
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: Icon(Icons.search),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(16),
+                    contentPadding: EdgeInsets.all(16),
                   ),
                 ),
               ),
               const SizedBox(height: 24),
 
               // Stats
-              Row(
+              const Row(
                 children: [
                   Expanded(
                     child: _StatCard(title: '1', subtitle: 'Applications'),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: _StatCard(title: '0', subtitle: 'Saved'),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: _StatCard(title: '85%', subtitle: 'Match Rate'),
                   ),
@@ -275,7 +277,8 @@ class DashboardScreenNew extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              _InternshipCard(
+              const _InternshipCard(
+                internshipId: 'google-frontend',
                 company: 'Google',
                 title: 'Frontend Developer Intern',
                 salary: '₹30,000/month',
@@ -283,7 +286,8 @@ class DashboardScreenNew extends StatelessWidget {
                 skills: ['React', 'JavaScript', 'CSS'],
               ),
               const SizedBox(height: 12),
-              _InternshipCard(
+              const _InternshipCard(
+                internshipId: 'microsoft-ml',
                 company: 'Microsoft',
                 title: 'Machine Learning Intern',
                 salary: '₹40,000/month',
@@ -300,7 +304,7 @@ class DashboardScreenNew extends StatelessWidget {
 
 // Search Screen
 class SearchScreenNew extends StatelessWidget {
-  const SearchScreenNew({Key? key}) : super(key: key);
+  const SearchScreenNew({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -326,26 +330,26 @@ class SearchScreenNew extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.border),
                   ),
-                  child: TextField(
+                  child: const TextField(
                     decoration: InputDecoration(
                       hintText: 'Search by role, company, or skill...',
-                      prefixIcon: const Icon(Icons.search),
+                      prefixIcon: Icon(Icons.search),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.all(16),
+                      contentPadding: EdgeInsets.all(16),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                SingleChildScrollView(
+                const SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
                       _FilterChip(label: 'All'),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       _FilterChip(label: 'Remote', isSelected: true),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       _FilterChip(label: 'On-site'),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       _FilterChip(label: 'Hybrid'),
                     ],
                   ),
@@ -360,6 +364,7 @@ class SearchScreenNew extends StatelessWidget {
               itemBuilder: (context, index) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _InternshipCard(
+                  internshipId: index.isEven ? 'google-frontend' : 'microsoft-ml',
                   company: index.isEven ? 'Google' : 'Microsoft',
                   title: index.isEven ? 'Frontend Developer Intern' : 'ML Engineer Intern',
                   salary: index.isEven ? '₹30,000/month' : '₹40,000/month',
@@ -379,7 +384,7 @@ class SearchScreenNew extends StatelessWidget {
 
 // Bookmarks Screen
 class BookmarksScreenNew extends StatelessWidget {
-  const BookmarksScreenNew({Key? key}) : super(key: key);
+  const BookmarksScreenNew({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -405,16 +410,18 @@ class BookmarksScreenNew extends StatelessWidget {
             const SizedBox(height: 20),
             Expanded(
               child: ListView(
-                children: [
+                children: const [
                   _InternshipCard(
+                    internshipId: 'google-frontend',
                     company: 'Google',
                     title: 'Frontend Developer Intern',
                     salary: '₹30,000/month',
                     location: 'Bangalore - Remote',
                     skills: ['React', 'JavaScript', 'CSS'],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _InternshipCard(
+                    internshipId: 'amazon-data',
                     company: 'Amazon',
                     title: 'Data Science Intern',
                     salary: '₹50,000/month',
@@ -433,7 +440,7 @@ class BookmarksScreenNew extends StatelessWidget {
 
 // Applications Screen
 class ApplicationsScreenNew extends StatelessWidget {
-  const ApplicationsScreenNew({Key? key}) : super(key: key);
+  const ApplicationsScreenNew({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -457,7 +464,7 @@ class ApplicationsScreenNew extends StatelessWidget {
                 border: Border.all(color: AppColors.border),
               ),
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _AppStatusBox(count: '0', label: 'Applied'),
@@ -555,11 +562,11 @@ class ApplicationsScreenNew extends StatelessWidget {
 }
 
 // Profile Screen
-class ProfileScreenNew extends StatelessWidget {
-  const ProfileScreenNew({Key? key}) : super(key: key);
+class ProfileScreenNew extends ConsumerWidget {
+  const ProfileScreenNew({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       child: SingleChildScrollView(
         child: Column(
@@ -611,7 +618,7 @@ class ProfileScreenNew extends StatelessWidget {
                   const SizedBox(height: 20),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: LinearProgressIndicator(
+                    child: const LinearProgressIndicator(
                       minHeight: 8,
                       value: 1.0,
                       backgroundColor: Colors.white30,
@@ -634,7 +641,7 @@ class ProfileScreenNew extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _ProfileStatBox(count: '1', label: 'Applied'),
@@ -643,7 +650,7 @@ class ProfileScreenNew extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  _ProfileSection(
+                  const _ProfileSection(
                     title: 'Personal Info',
                     children: [
                       _ProfileItem(label: 'Email', value: 'demo@internmatch.ai'),
@@ -651,7 +658,7 @@ class ProfileScreenNew extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _ProfileSection(
+                  const _ProfileSection(
                     title: 'Academic Details',
                     children: [
                       _ProfileItem(label: 'Degree', value: 'B.Tech - Computer'),
@@ -667,7 +674,7 @@ class ProfileScreenNew extends StatelessWidget {
                             .map((skill) => Chip(
                           label: Text(skill),
                           backgroundColor: AppColors.primary.withOpacity(0.1),
-                          side: BorderSide(color: AppColors.primary),
+                          side: const BorderSide(color: AppColors.primary),
                         ))
                             .toList(),
                       ),
@@ -677,7 +684,10 @@ class ProfileScreenNew extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        await ref.read(authProvider.notifier).logout();
+                        context.go(AppRoutes.welcome);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.error,
                       ),
@@ -742,6 +752,7 @@ class _StatCard extends StatelessWidget {
 }
 
 class _InternshipCard extends StatelessWidget {
+  final String internshipId;
   final String company;
   final String title;
   final String salary;
@@ -749,6 +760,7 @@ class _InternshipCard extends StatelessWidget {
   final List<String> skills;
 
   const _InternshipCard({
+    required this.internshipId,
     required this.company,
     required this.title,
     required this.salary,
@@ -824,7 +836,7 @@ class _InternshipCard extends StatelessWidget {
               label: Text(skill),
               backgroundColor: AppColors.primary.withOpacity(0.1),
               side: BorderSide.none,
-              labelStyle: TextStyle(color: AppColors.primary, fontSize: 11),
+              labelStyle: const TextStyle(color: AppColors.primary, fontSize: 11),
               padding: EdgeInsets.zero,
               visualDensity: VisualDensity.compact,
             ))
@@ -852,7 +864,7 @@ class _InternshipCard extends StatelessWidget {
                 ],
               ),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () => context.go('${AppRoutes.mainShell}/internship/$internshipId'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                 ),

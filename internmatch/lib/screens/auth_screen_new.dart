@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/app_providers.dart';
+import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_router.dart';
 
@@ -9,9 +10,9 @@ class AuthScreenNew extends ConsumerStatefulWidget {
   final String mode;
 
   const AuthScreenNew({
-    Key? key,
+    super.key,
     required this.mode,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<AuthScreenNew> createState() => _AuthScreenNewState();
@@ -63,7 +64,12 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
       }
 
       if (mounted) {
-        context.go(AppRoutes.onboarding);
+        final storage = await StorageService.getInstance();
+        if (storage.onboardingDone) {
+          context.go(AppRoutes.mainShell);
+        } else {
+          context.go(AppRoutes.onboarding);
+        }
       }
     } catch (e) {
       if (mounted) {

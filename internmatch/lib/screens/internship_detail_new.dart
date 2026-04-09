@@ -6,9 +6,9 @@ class InternshipDetailScreenNew extends StatefulWidget {
   final String internshipId;
 
   const InternshipDetailScreenNew({
-    Key? key,
+    super.key,
     required this.internshipId,
-  }) : super(key: key);
+  });
 
   @override
   State<InternshipDetailScreenNew> createState() => _InternshipDetailScreenNewState();
@@ -31,7 +31,7 @@ class _InternshipDetailScreenNewState extends State<InternshipDetailScreenNew> {
             leading: CircleAvatar(
               backgroundColor: Colors.white,
               child: IconButton(
-                icon: Icon(Icons.arrow_back, color: AppColors.primary),
+                icon: const Icon(Icons.arrow_back, color: AppColors.primary),
                 onPressed: () => context.pop(),
               ),
             ),
@@ -105,7 +105,7 @@ class _InternshipDetailScreenNewState extends State<InternshipDetailScreenNew> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Quick Info
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _InfoBox(
@@ -180,7 +180,7 @@ class _InternshipDetailScreenNewState extends State<InternshipDetailScreenNew> {
                         .map((skill) => Chip(
                       label: Text(skill),
                       backgroundColor: AppColors.primary.withOpacity(0.1),
-                      side: BorderSide(color: AppColors.primary),
+                      side: const BorderSide(color: AppColors.primary),
                     ))
                         .toList(),
                   ),
@@ -245,9 +245,9 @@ class _InternshipDetailScreenNewState extends State<InternshipDetailScreenNew> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        Divider(color: AppColors.border),
+                        const Divider(color: AppColors.border),
                         const SizedBox(height: 12),
-                        Row(
+                        const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             _CompanyStatBox(
@@ -359,7 +359,7 @@ class _InternshipDetailScreenNewState extends State<InternshipDetailScreenNew> {
                   color: AppColors.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Center(
+                child: const Center(
                   child: Icon(
                     Icons.check,
                     size: 14,
@@ -384,13 +384,13 @@ class _InternshipDetailScreenNewState extends State<InternshipDetailScreenNew> {
 
   List<Widget> _buildSimilarInternships() {
     return [
-      _SimilarInternshipCard(
+      const _SimilarInternshipCard(
         company: 'Microsoft',
         title: 'Web Developer Intern',
         salary: '₹35,000/month',
       ),
       const SizedBox(height: 12),
-      _SimilarInternshipCard(
+      const _SimilarInternshipCard(
         company: 'Meta',
         title: 'Frontend Engineer Intern',
         salary: '₹40,000/month',

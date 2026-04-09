@@ -4,7 +4,7 @@ import '../theme/app_theme.dart';
 import '../utils/app_router.dart';
 
 class WelcomeScreenNew extends StatelessWidget {
-  const WelcomeScreenNew({Key? key}) : super(key: key);
+  const WelcomeScreenNew({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -79,24 +79,24 @@ class WelcomeScreenNew extends StatelessWidget {
                   const SizedBox(height: 48),
 
                   // Features
-                  _FeatureChip(
+                  const _FeatureChip(
                     icon: Icons.auto_awesome,
                     label: 'AI-Powered Matching',
                   ),
                   const SizedBox(height: 12),
-                  _FeatureChip(
+                  const _FeatureChip(
                     icon: Icons.trending_up,
                     label: 'Career Growth',
                   ),
                   const SizedBox(height: 12),
-                  _FeatureChip(
+                  const _FeatureChip(
                     icon: Icons.stars,
                     label: 'Smart Recommendations',
                   ),
                   const SizedBox(height: 48),
 
                   // Stats
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _StatBox(title: '2000+', subtitle: 'Internships'),

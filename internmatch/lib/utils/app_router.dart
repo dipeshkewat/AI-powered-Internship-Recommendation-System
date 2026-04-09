@@ -48,9 +48,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // Already logged in, no need to show welcome/login
       if (isAuth &&
-          (loc == AppRoutes.welcome ||
-              loc == AppRoutes.auth ||
-              loc.startsWith(AppRoutes.onboarding))) {
+          (loc == AppRoutes.welcome || loc == AppRoutes.auth)) {
         return AppRoutes.mainShell;
       }
 

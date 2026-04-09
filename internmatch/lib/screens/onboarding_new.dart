@@ -1,27 +1,98 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/app_router.dart';
 
 class OnboardingScreenNew extends StatefulWidget {
-  const OnboardingScreenNew({Key? key}) : super(key: key);
+  const OnboardingScreenNew({super.key});
 
   @override
   State<OnboardingScreenNew> createState() => _OnboardingScreenNewState();
 }
 
 class _OnboardingScreenNewState extends State<OnboardingScreenNew> {
+  final PageController _pageController = PageController();
   int _currentStep = 0;
-  late PageController _pageController;
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _collegeController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  String? _degree;
+  String? _yearOfStudy;
+  final TextEditingController _cgpaController = TextEditingController();
+  final List<String> _skills = [];
+  final List<String> _interests = [];
+  String? _preferredLocation;
+  String? _preferredType;
+  String? _availability;
+  final TextEditingController _portfolioController = TextEditingController();
+
+  static const int _stepCount = 11;
+
+  bool get _canContinue {
+    switch (_currentStep) {
+      case 0:
+        return _nameController.text.isNotEmpty &&
+            _collegeController.text.isNotEmpty &&
+            _phoneController.text.isNotEmpty;
+      case 1:
+        return _degree != null && _yearOfStudy != null;
+      case 2:
+        return _skills.isNotEmpty;
+      case 3:
+        return _interests.isNotEmpty;
+      case 4:
+        return _preferredLocation != null;
+      case 5:
+        return _preferredType != null;
+      case 6:
+        return _availability != null && _availability!.isNotEmpty;
+      case 7:
+      case 8:
+      case 9:
+      case 10:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  Future<void> _goNext() async {
+    if (_currentStep < _stepCount - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      await _completeOnboarding();
+    }
+  }
+
+  Future<void> _completeOnboarding() async {
+    final storage = await StorageService.getInstance();
+    await storage.setOnboardingDone();
+    if (!mounted) return;
+    context.go(AppRoutes.mainShell);
+  }
+
+  void _goPrevious() {
+    if (_currentStep > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _nameController.dispose();
+    _collegeController.dispose();
+    _phoneController.dispose();
+    _cgpaController.dispose();
+    _portfolioController.dispose();
     super.dispose();
   }
 
@@ -30,138 +101,499 @@ class _OnboardingScreenNewState extends State<OnboardingScreenNew> {
     return WillPopScope(
       onWillPop: () async {
         if (_currentStep > 0) {
-          _pageController.previousPage(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
+          _goPrevious();
           return false;
         }
         return true;
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: _currentStep > 0
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  color: AppColors.textPrimary,
-                  onPressed: () {
-                    _pageController.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                )
-              : null,
-          title: Text(
-            'Step ${_currentStep + 1}/5',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          centerTitle: true,
-        ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  minHeight: 4,
-                  value: (_currentStep + 1) / 5,
-                  backgroundColor: AppColors.border,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+        body: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          minHeight: 8,
+                          value: (_currentStep + 1) / _stepCount,
+                          backgroundColor: AppColors.border,
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        ),
+                      ),
+                    ),
+
+                  ],
                 ),
               ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() => _currentStep = index);
-                },
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _BasicInfoStep(pageController: _pageController),
-                  _AcademicStep(pageController: _pageController),
-                  _SkillsStep(pageController: _pageController),
-                  _InterestsStep(pageController: _pageController),
-                  _PreferencesStep(pageController: _pageController),
-                ],
+              const SizedBox(height: 20),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) => setState(() => _currentStep = index),
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildIntroStep(context),
+                    _buildAcademicStep(context),
+                    _buildSkillsStep(context),
+                    _buildInterestsStep(context),
+                    _buildLocationStep(context),
+                    _buildTypeStep(context),
+                    _buildAvailabilityStep(context),
+                    _buildPortfolioStep(context),
+                    _buildReviewStep(context),
+                    _buildFinishStep(context),
+                    _buildSuccessStep(context),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                child: Row(
+                  children: [
+                    if (_currentStep > 0)
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _goPrevious,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.textPrimary,
+                            side: const BorderSide(color: AppColors.border),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: const Text('Back'),
+                        ),
+                      ),
+                    if (_currentStep > 0) const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: _canContinue ? _goNext : null,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(
+                          _currentStep == _stepCount - 1 ? 'Finish Setup' : 'Continue',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-// Step 1: Basic Info
-class _BasicInfoStep extends StatefulWidget {
-  final PageController pageController;
-
-  const _BasicInfoStep({required this.pageController});
-
-  @override
-  State<_BasicInfoStep> createState() => _BasicInfoStepState();
-}
-
-class _BasicInfoStepState extends State<_BasicInfoStep> {
-  final _nameController = TextEditingController();
-  final _collegeController = TextEditingController();
-  final _phoneController = TextEditingController();
-
-  bool get _isValid => _nameController.text.isNotEmpty &&
-      _collegeController.text.isNotEmpty &&
-      _phoneController.text.isNotEmpty;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+  Widget _pageHeader(BuildContext context, String title, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Let\'s start with basics',
+            title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+                  fontWeight: FontWeight.w700,
+                ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Help us learn more about you',
+            subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
+                  color: AppColors.textSecondary,
+                ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIntroStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Tell us about you',
+            'We’ll tailor internship matches to your profile.',
+          ),
           _buildTextField('Full Name', _nameController),
           const SizedBox(height: 16),
-          _buildTextField('College Name', _collegeController),
+          _buildTextField('College / University', _collegeController),
           const SizedBox(height: 16),
-          _buildTextField('Phone Number', _phoneController,
+          _buildTextField('Phone number', _phoneController,
               keyboardType: TextInputType.phone),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isValid
-                  ? () {
-                      widget.pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAcademicStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Academic profile',
+            'Your degree and year help us match the right internships.',
+          ),
+          _buildDropdown(
+            label: 'Degree / Program',
+            value: _degree,
+            options: ['B.Tech', 'B.Sc', 'BE', 'BCA', 'MBA', 'MSc'],
+            onChanged: (value) => setState(() => _degree = value),
+          ),
+          const SizedBox(height: 16),
+          _buildDropdown(
+            label: 'Current Year',
+            value: _yearOfStudy,
+            options: ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduated'],
+            onChanged: (value) => setState(() => _yearOfStudy = value),
+          ),
+          const SizedBox(height: 16),
+          _buildTextField('CGPA (Optional)', _cgpaController,
+              keyboardType: TextInputType.number),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkillsStep(BuildContext context) {
+    const availableSkills = [
+      'Python',
+      'JavaScript',
+      'Flutter',
+      'UI/UX',
+      'Machine Learning',
+      'Data Analysis',
+      'Backend',
+      'Product',
+    ];
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Select your skills',
+            'Choose the abilities that describe you best.',
+          ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: availableSkills.map((skill) {
+              final selected = _skills.contains(skill);
+              return ChoiceChip(
+                label: Text(skill),
+                selected: selected,
+                onSelected: (_) {
+                  setState(() {
+                    if (selected) {
+                      _skills.remove(skill);
+                    } else {
+                      _skills.add(skill);
                     }
-                  : null,
-              child: const Text('Continue'),
+                  });
+                },
+                selectedColor: AppColors.primary.withOpacity(0.14),
+                backgroundColor: AppColors.surfaceElevated,
+                labelStyle: TextStyle(
+                  color: selected ? AppColors.primary : AppColors.textPrimary,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInterestsStep(BuildContext context) {
+    const availableInterests = [
+      'Fintech',
+      'Healthtech',
+      'Edtech',
+      'SaaS',
+      'E-commerce',
+      'Gaming',
+      'AI / ML',
+    ];
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Pick your interests',
+            'Tell us which internship sectors excite you.',
+          ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: availableInterests.map((interest) {
+              final selected = _interests.contains(interest);
+              return ChoiceChip(
+                label: Text(interest),
+                selected: selected,
+                onSelected: (_) {
+                  setState(() {
+                    if (selected) {
+                      _interests.remove(interest);
+                    } else {
+                      _interests.add(interest);
+                    }
+                  });
+                },
+                selectedColor: AppColors.tertiary.withOpacity(0.14),
+                backgroundColor: AppColors.surfaceElevated,
+                labelStyle: TextStyle(
+                  color: selected ? AppColors.tertiary : AppColors.textPrimary,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationStep(BuildContext context) {
+    const locations = ['Remote', 'Hybrid', 'On-site'];
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Location preference',
+            'Where would you like to work?',
+          ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: locations.map((location) {
+              final selected = _preferredLocation == location;
+              return ChoiceChip(
+                label: Text(location),
+                selected: selected,
+                onSelected: (_) => setState(() => _preferredLocation = location),
+                selectedColor: AppColors.primary.withOpacity(0.14),
+                backgroundColor: AppColors.surfaceElevated,
+                labelStyle: TextStyle(
+                  color: selected ? AppColors.primary : AppColors.textPrimary,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypeStep(BuildContext context) {
+    const types = ['Full-time', 'Part-time', 'Flexible'];
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Work style',
+            'Choose the internship type you prefer.',
+          ),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: types.map((type) {
+              final selected = _preferredType == type;
+              return ChoiceChip(
+                label: Text(type),
+                selected: selected,
+                onSelected: (_) => setState(() => _preferredType = type),
+                selectedColor: AppColors.primary.withOpacity(0.14),
+                backgroundColor: AppColors.surfaceElevated,
+                labelStyle: TextStyle(
+                  color: selected ? AppColors.primary : AppColors.textPrimary,
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvailabilityStep(BuildContext context) {
+    const availabilityOptions = ['ASAP', 'In 1 month', 'In 3 months'];
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Availability',
+            'When can you begin your next internship?',
+          ),
+          Column(
+            children: availabilityOptions.map((option) {
+              return RadioListTile<String>(
+                title: Text(option),
+                value: option,
+                groupValue: _availability,
+                activeColor: AppColors.primary,
+                onChanged: (value) => setState(() => _availability = value),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPortfolioStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Portfolio links',
+            'Add a resume or portfolio link if you have one.',
+          ),
+          _buildTextField('Portfolio / GitHub / LinkedIn', _portfolioController,
+              keyboardType: TextInputType.url),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _pageHeader(
+            context,
+            'Review your profile',
+            'Check your selections before we finish setup.',
+          ),
+          _buildReviewTile('Name', _nameController.text),
+          _buildReviewTile('College', _collegeController.text),
+          _buildReviewTile('Phone', _phoneController.text),
+          _buildReviewTile('Degree', _degree ?? '-'),
+          _buildReviewTile('Year', _yearOfStudy ?? '-'),
+          _buildReviewTile('Skills', _skills.isNotEmpty ? _skills.join(', ') : '-'),
+          _buildReviewTile('Interests', _interests.isNotEmpty ? _interests.join(', ') : '-'),
+          _buildReviewTile('Location', _preferredLocation ?? '-'),
+          _buildReviewTile('Type', _preferredType ?? '-'),
+          _buildReviewTile('Availability', _availability ?? '-'),
+          _buildReviewTile('Portfolio', _portfolioController.text.isNotEmpty ? _portfolioController.text : 'Not provided'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinishStep(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'You’re all set!',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'We will use this information to surface the best internships for your profile.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+          ),
+          const SizedBox(height: 28),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.check_circle_outline, size: 56, color: AppColors.tertiary),
+                const SizedBox(height: 16),
+                Text(
+                  'Profile saved successfully',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSuccessStep(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.rocket_launch, size: 88, color: AppColors.primary),
+            const SizedBox(height: 24),
+            Text(
+              'You’re ready to discover internships!',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Tap Finish Setup to land on your dashboard and see the best matches.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -171,378 +603,91 @@ class _BasicInfoStepState extends State<_BasicInfoStep> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           keyboardType: keyboardType,
           onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
+            hintText: label,
+            fillColor: AppColors.surface,
+            filled: true,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE5E5E5)),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
-            contentPadding: const EdgeInsets.all(16),
-            hintText: 'Enter $label',
           ),
         ),
       ],
     );
   }
-}
 
-// Step 2: Academic
-class _AcademicStep extends StatefulWidget {
-  final PageController pageController;
+  Widget _buildDropdown({
+    required String label,
+    required String? value,
+    required List<String> options,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: value,
+          items: options
+              .map((option) => DropdownMenuItem(value: option, child: Text(option)))
+              .toList(),
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surface,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-  const _AcademicStep({required this.pageController});
-
-  @override
-  State<_AcademicStep> createState() => _AcademicStepState();
-}
-
-class _AcademicStepState extends State<_AcademicStep> {
-  String? _degree;
-  String? _yearOfStudy;
-  final _cgpaController = TextEditingController();
-
-  bool get _isValid => _degree != null && _yearOfStudy != null;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
+  Widget _buildReviewTile(String title, String value) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Academic Details',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tell us about your academic qualification',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Text('Degree/Program', style: const TextStyle(fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            value: _degree,
-            items: ['B.Tech', 'B.Sc', 'BE', 'BCA', 'MBA', 'MSc']
-                .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                .toList(),
-            onChanged: (value) => setState(() => _degree = value),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.all(16),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Current Year', style: const TextStyle(fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            value: _yearOfStudy,
-            items: ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduated']
-                .map((y) => DropdownMenuItem(value: y, child: Text(y)))
-                .toList(),
-            onChanged: (value) => setState(() => _yearOfStudy = value),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.all(16),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('CGPA (Optional)', style: const TextStyle(fontWeight: FontWeight.w500)),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _cgpaController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.all(16),
-              hintText: '3.5',
-            ),
-          ),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isValid
-                  ? () {
-                      widget.pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  : null,
-              child: const Text('Continue'),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
-  }
-}
-
-// Step 3: Skills
-class _SkillsStep extends StatefulWidget {
-  final PageController pageController;
-
-  const _SkillsStep({required this.pageController});
-
-  @override
-  State<_SkillsStep> createState() => _SkillsStepState();
-}
-
-class _SkillsStepState extends State<_SkillsStep> {
-  final Set<String> _selectedSkills = {};
-  final List<String> _allSkills = [
-    'Python', 'JavaScript', 'React', 'Django', 'FastAPI',
-    'SQL', 'MongoDB', 'Git', 'AWS', 'Docker',
-    'Java', 'C++', 'Data Analysis', 'Machine Learning', 'UI/UX'
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Your Skills',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Select the skills you have (select at least 1)',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _allSkills
-                .map((skill) => FilterChip(
-              label: Text(skill),
-              selected: _selectedSkills.contains(skill),
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedSkills.add(skill);
-                  } else {
-                    _selectedSkills.remove(skill);
-                  }
-                });
-              },
-              selectedColor: AppColors.primary.withOpacity(0.2),
-              checkmarkColor: AppColors.primary,
-            ))
-                .toList(),
-          ),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _selectedSkills.isNotEmpty
-                  ? () {
-                      widget.pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  : null,
-              child: const Text('Continue'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Step 4: Interests
-class _InterestsStep extends StatefulWidget {
-  final PageController pageController;
-
-  const _InterestsStep({required this.pageController});
-
-  @override
-  State<_InterestsStep> createState() => _InterestsStepState();
-}
-
-class _InterestsStepState extends State<_InterestsStep> {
-  final Set<String> _selectedInterests = {};
-  final List<String> _allInterests = [
-    'Web Development', 'Mobile Development', 'Machine Learning',
-    'Cloud Computing', 'Data Science', 'DevOps',
-    'Cybersecurity', 'Blockchain', 'AI/NLP', 'IoT'
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Areas of Interest',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'What interests you the most? (select at least 1)',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _allInterests
-                .map((interest) => FilterChip(
-              label: Text(interest),
-              selected: _selectedInterests.contains(interest),
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedInterests.add(interest);
-                  } else {
-                    _selectedInterests.remove(interest);
-                  }
-                });
-              },
-              selectedColor: AppColors.tertiary.withOpacity(0.2),
-              checkmarkColor: AppColors.tertiary,
-            ))
-                .toList(),
-          ),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _selectedInterests.isNotEmpty
-                  ? () {
-                      widget.pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.tertiary,
-              ),
-              child: const Text('Continue'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Step 5: Preferences
-class _PreferencesStep extends StatefulWidget {
-  final PageController pageController;
-
-  const _PreferencesStep({required this.pageController});
-
-  @override
-  State<_PreferencesStep> createState() => _PreferencesStepState();
-}
-
-class _PreferencesStepState extends State<_PreferencesStep> {
-  String? _locationType;
-  String? _workArrangement;
-
-  bool get _isValid => _locationType != null && _workArrangement != null;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Work Preferences',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'How would you like to work?',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Text('Work Location', style: const TextStyle(fontWeight: FontWeight.w500)),
-          const SizedBox(height: 12),
-          ..._buildLocationOptions(),
-          const SizedBox(height: 24),
-          Text('Work Arrangement', style: const TextStyle(fontWeight: FontWeight.w500)),
-          const SizedBox(height: 12),
-          ..._buildArrangementOptions(),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isValid
-                  ? () {
-                      // Complete onboarding - navigate to main shell
-                      context.go('/main-shell');
-                    }
-                  : null,
-              child: const Text('Complete Profile'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildLocationOptions() {
-    return ['Remote', 'On-site', 'Hybrid']
-        .map((location) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: RadioListTile<String>(
-            value: location,
-            groupValue: _locationType,
-            onChanged: (value) => setState(() => _locationType = value),
-            title: Text(location),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ))
-        .toList();
-  }
-
-  List<Widget> _buildArrangementOptions() {
-    return ['Full-time', 'Part-time', 'Flexible']
-        .map((arrangement) => Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: RadioListTile<String>(
-            value: arrangement,
-            groupValue: _workArrangement,
-            onChanged: (value) => setState(() => _workArrangement = value),
-            title: Text(arrangement),
-            contentPadding: EdgeInsets.zero,
-          ),
-        ))
-        .toList();
   }
 }

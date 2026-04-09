@@ -26,9 +26,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (storage.isLoggedIn) {
       context.go(AppRoutes.mainShell);
-    } else if (!storage.onboardingDone) {
-      context.go(AppRoutes.onboarding);
     } else {
+      // Always show welcome screen first for non-authenticated users
       context.go(AppRoutes.welcome);
     }
   }
