@@ -49,30 +49,51 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final ApiService _apiService;
 
-  AuthNotifier(this._apiService) : super(const AuthState());
+  AuthNotifier(this._apiService) : super(const AuthState()) {
+    _restoreSession();
+  }
+
+  Future<void> _restoreSession() async {
+    try {
+      final token = await _apiService.getStoredToken();
+      final userId = await _apiService.getStoredUserId();
+      
+      if (token != null && userId != null) {
+        state = state.copyWith(
+          isAuthenticated: true,
+          token: token,
+          userId: userId,
+        );
+      }
+    } catch (e) {
+      // Silent fail - user not authenticated
+    }
+  }
 
   Future<bool> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final data = await _apiService.login(email, password);
-      final token = data['token'] as String;
-      final userId = data['user_id'] as String;
-      // TODO: persist token
+      final token = data['access_token'] ?? data['token'];
+      final userId = data['user_id'] ?? data['user']['id'];
+      
+      if (token == null || userId == null) {
+        throw Exception('Invalid response: missing token or user_id');
+      }
+
       state = state.copyWith(
         isAuthenticated: true,
         token: token,
-        userId: userId,
+        userId: userId.toString(),
         isLoading: false,
       );
       return true;
     } catch (e) {
-      // Temporary: bypass auth in dev mode
       state = state.copyWith(
-        isAuthenticated: true,
-        userId: 'dev_user_001',
         isLoading: false,
+        error: e.toString(),
       );
-      return true;
+      rethrow;
     }
   }
 
@@ -80,26 +101,31 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final data = await _apiService.register(name, email, password);
-      final token = data['token'] as String;
-      final userId = data['user_id'] as String;
+      final token = data['access_token'] ?? data['token'];
+      final userId = data['user_id'] ?? data['user']['id'];
+      
+      if (token == null || userId == null) {
+        throw Exception('Invalid response: missing token or user_id');
+      }
+
       state = state.copyWith(
         isAuthenticated: true,
         token: token,
-        userId: userId,
+        userId: userId.toString(),
         isLoading: false,
       );
       return true;
     } catch (e) {
       state = state.copyWith(
-        isAuthenticated: true,
-        userId: 'dev_user_001',
         isLoading: false,
+        error: e.toString(),
       );
-      return true;
+      rethrow;
     }
   }
 
-  void logout() {
+  Future<void> logout() async {
+    await _apiService.logout();
     state = const AuthState();
   }
 }

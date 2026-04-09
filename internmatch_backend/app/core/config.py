@@ -46,7 +46,8 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 5
 
     # ── CORS ───────────────────────────────────────────────────────────────────
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8080"]
+    # Accept any localhost origin for development
+    CORS_ORIGINS: List[str] = ["*"]
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

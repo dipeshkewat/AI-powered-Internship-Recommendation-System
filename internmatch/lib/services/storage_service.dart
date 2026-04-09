@@ -11,7 +11,8 @@ class StorageService {
   static const _keyProfile = 'user_profile_json';
   static const _keyBookmarks = 'bookmarked_ids';
   static const _keyOnboardingDone = 'onboarding_done';
-  static const _keyTheme = 'theme_mode'; // 'dark' | 'light'
+  // ignore: unused_field
+  static const _keyTheme = 'theme_mode'; // 'dark' | 'light' - (reserved for future use)
 
   // ─── Singleton ─────────────────────────────────────────────────────────────
 

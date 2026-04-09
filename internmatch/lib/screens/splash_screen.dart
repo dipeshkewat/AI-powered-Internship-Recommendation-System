@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (storage.isLoggedIn) {
-      context.go(AppRoutes.home);
+      context.go(AppRoutes.mainShell);
     } else if (!storage.onboardingDone) {
       context.go(AppRoutes.onboarding);
     } else {

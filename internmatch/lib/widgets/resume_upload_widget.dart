@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:file_picker/file_picker.dart';
 import '../theme/app_theme.dart';
 
 /// Drop-in widget for the profile screen.
@@ -29,28 +30,28 @@ class _ResumeUploadWidgetState extends State<ResumeUploadWidget> {
       widget.existingResumeUrl != null || _state == _UploadState.done;
 
   Future<void> _pickFile() async {
-    // TODO: Replace with file_picker package:
-    // final result = await FilePicker.platform.pickFiles(
-    //   type: FileType.custom,
-    //   allowedExtensions: ['pdf', 'doc', 'docx'],
-    // );
-    // if (result != null && result.files.single.path != null) {
-    //   final file = File(result.files.single.path!);
-    //   setState(() {
-    //     _fileName = result.files.single.name;
-    //     _state = _UploadState.uploading;
-    //   });
-    //   widget.onFileSelected(file);
-    //   _simulateUpload(); // Remove once real upload is wired
-    // }
-
-    // Simulation for UI preview:
-    setState(() {
-      _fileName = 'Dipesh_Resume_2025.pdf';
-      _state = _UploadState.uploading;
-      _progress = 0;
-    });
-    await _simulateUpload();
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+      );
+      
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        setState(() {
+          _fileName = result.files.single.name;
+          _state = _UploadState.uploading;
+          _progress = 0;
+        });
+        
+        widget.onFileSelected(file);
+        await _simulateUpload();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking file: $e')),
+      );
+    }
   }
 
   Future<void> _simulateUpload() async {

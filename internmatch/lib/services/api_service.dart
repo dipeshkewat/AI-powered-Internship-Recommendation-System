@@ -1,12 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/internship.dart';
 import '../models/user_profile.dart';
 
-// TODO: Replace with your actual FastAPI backend URL
 const String _baseUrl = 'http://localhost:8000/api/v1';
 
 class ApiService {
   late final Dio _dio;
+  SharedPreferences? _prefs;
 
   ApiService() {
     _dio = Dio(
@@ -21,22 +22,25 @@ class ApiService {
       ),
     );
 
+    // Initialize SharedPreferences asynchronously
+    _initPrefs();
+
     // Request interceptor: attach JWT token
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // TODO: Load token from SharedPreferences
-          // final prefs = await SharedPreferences.getInstance();
-          // final token = prefs.getString('auth_token');
-          // if (token != null) {
-          //   options.headers['Authorization'] = 'Bearer $token';
-          // }
+          final token = _prefs?.getString('auth_token');
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
           handler.next(options);
         },
         onError: (error, handler) {
           // Centralized error handling
           if (error.response?.statusCode == 401) {
-            // TODO: Trigger logout / refresh token
+            // Token expired or invalid - clear stored token
+            _prefs?.remove('auth_token');
+            _prefs?.remove('user_id');
           }
           handler.next(error);
         },
@@ -44,24 +48,74 @@ class ApiService {
     );
   }
 
-  // ─── AUTH ──────────────────────────────────────────────────────────────────
+  Future<void> _initPrefs() async {
+    _prefs ??= await SharedPreferences.getInstance();
+  }
+
+  Future<void> saveToken(String token, String userId) async {
+    await _initPrefs();
+    await _prefs?.setString('auth_token', token);
+    await _prefs?.setString('user_id', userId);
+  }
+
+  Future<void> clearAuth() async {
+    await _initPrefs();
+    await _prefs?.remove('auth_token');
+    await _prefs?.remove('user_id');
+  }
+
+  Future<String?> getStoredToken() async {
+    await _initPrefs();
+    return _prefs?.getString('auth_token');
+  }
+
+  Future<String?> getStoredUserId() async {
+    await _initPrefs();
+    return _prefs?.getString('user_id');
+  }
 
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await _dio.post('/auth/login', data: {
-      'email': email,
-      'password': password,
-    });
-    return response.data as Map<String, dynamic>;
+    try {
+      final response = await _dio.post('/auth/login', data: {
+        'email': email,
+        'password': password,
+      });
+      final data = response.data as Map<String, dynamic>;
+      final token = data['access_token'] ?? data['token'];
+      final userId = data['user_id'] ?? data['user']['id'];
+      
+      if (token != null && userId != null) {
+        await saveToken(token, userId.toString());
+      }
+      return data;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> register(
       String name, String email, String password) async {
-    final response = await _dio.post('/auth/register', data: {
-      'name': name,
-      'email': email,
-      'password': password,
-    });
-    return response.data as Map<String, dynamic>;
+    try {
+      final response = await _dio.post('/auth/register', data: {
+        'name': name,
+        'email': email,
+        'password': password,
+      });
+      final data = response.data as Map<String, dynamic>;
+      final token = data['access_token'] ?? data['token'];
+      final userId = data['user_id'] ?? data['user']['id'];
+      
+      if (token != null && userId != null) {
+        await saveToken(token, userId.toString());
+      }
+      return data;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> logout() async {
+    await clearAuth();
   }
 
   // ─── PROFILE ───────────────────────────────────────────────────────────────
@@ -159,5 +213,12 @@ class ApiService {
     } catch (_) {
       return [];
     }
+  }
+
+  Future<void> uploadResume(String userId, String filePath) async {
+    final formData = FormData.fromMap({
+      'resume': await MultipartFile.fromFile(filePath),
+    });
+    await _dio.put('/users/$userId/resume', data: formData);
   }
 }
