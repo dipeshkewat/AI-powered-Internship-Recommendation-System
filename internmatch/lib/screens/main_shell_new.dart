@@ -103,15 +103,22 @@ class _MainShellNewState extends State<MainShellNew> {
 }
 
 // Dashboard Screen
-class DashboardScreenNew extends StatelessWidget {
+class DashboardScreenNew extends ConsumerWidget {
   const DashboardScreenNew({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider);
+    final screenSize = MediaQuery.of(context).size;
+    final isMobile = screenSize.width < 600;
+    
+    final userName = profile.name.split(' ').first;
+    final avatarInitial = userName.isNotEmpty ? userName[0].toUpperCase() : 'U';
+    
     return SafeArea(
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(isMobile ? 16 : 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -119,18 +126,18 @@ class DashboardScreenNew extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: isMobile ? 45 : 50,
+                    height: isMobile ? 45 : 50,
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        'A',
+                        avatarInitial,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 24,
+                          fontSize: isMobile ? 20 : 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -142,15 +149,17 @@ class DashboardScreenNew extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Good evening, Arjun 👋',
+                          'Good evening, $userName 👋',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w600,
+                            fontSize: isMobile ? 16 : 18,
                           ),
                         ),
                         Text(
                           '1 Application - 0 Saved',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.textSecondary,
+                            fontSize: isMobile ? 12 : 13,
                           ),
                         ),
                       ],
@@ -179,17 +188,17 @@ class DashboardScreenNew extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Stats
-              const Row(
+              Row(
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: _StatCard(title: '1', subtitle: 'Applications'),
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
+                  SizedBox(width: isMobile ? 8 : 12),
+                  const Expanded(
                     child: _StatCard(title: '0', subtitle: 'Saved'),
                   ),
-                  SizedBox(width: 12),
-                  Expanded(
+                  SizedBox(width: isMobile ? 8 : 12),
+                  const Expanded(
                     child: _StatCard(title: '85%', subtitle: 'Match Rate'),
                   ),
                 ],
@@ -207,7 +216,7 @@ class DashboardScreenNew extends StatelessWidget {
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(isMobile ? 16 : 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -220,6 +229,7 @@ class DashboardScreenNew extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
+                            fontSize: isMobile ? 14 : 16,
                           ),
                         ),
                       ],
@@ -230,6 +240,7 @@ class DashboardScreenNew extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
+                        fontSize: isMobile ? 18 : 20,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -237,11 +248,19 @@ class DashboardScreenNew extends StatelessWidget {
                       'Our ML model analyzes your profile to find the top internships for you.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white70,
+                        fontSize: isMobile ? 13 : 14,
                       ),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Loading recommendations...'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                       ),
@@ -249,6 +268,7 @@ class DashboardScreenNew extends StatelessWidget {
                         '✨ Get Recommendations →',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           color: AppColors.primary,
+                          fontSize: isMobile ? 13 : 14,
                         ),
                       ),
                     ),
@@ -265,6 +285,7 @@ class DashboardScreenNew extends StatelessWidget {
                     'Trending Now',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w600,
+                      fontSize: isMobile ? 16 : 18,
                     ),
                   ),
                   Text(
@@ -567,6 +588,16 @@ class ProfileScreenNew extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider);
+    final screenSize = MediaQuery.of(context).size;
+    final isMobile = screenSize.width < 600;
+    
+    // Generate avatar initials
+    final names = profile.name.split(' ');
+    final avatarInitial = names.length > 1 
+        ? '${names[0][0]}${names[1][0]}' 
+        : names[0].isNotEmpty ? names[0][0] : 'U';
+    
     return SafeArea(
       child: SingleChildScrollView(
         child: Column(
@@ -580,12 +611,12 @@ class ProfileScreenNew extends ConsumerWidget {
                   ],
                 ),
               ),
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(isMobile ? 16 : 20),
               child: Column(
                 children: [
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: isMobile ? 70 : 80,
+                    height: isMobile ? 70 : 80,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -593,24 +624,28 @@ class ProfileScreenNew extends ConsumerWidget {
                     ),
                     child: Center(
                       child: Text(
-                        'AS',
+                        avatarInitial.toUpperCase(),
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
+                          fontSize: isMobile ? 24 : 28,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Arjun Sharma',
+                    profile.name.isNotEmpty ? profile.name : 'User',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
+                      fontSize: isMobile ? 20 : 24,
                     ),
                   ),
                   Text(
-                    'B.Tech • Computer',
+                    profile.degree.isNotEmpty 
+                        ? profile.degree 
+                        : 'Not specified',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.white70,
                     ),
@@ -620,7 +655,7 @@ class ProfileScreenNew extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8),
                     child: const LinearProgressIndicator(
                       minHeight: 8,
-                      value: 1.0,
+                      value: 0.75,
                       backgroundColor: Colors.white30,
                       valueColor: AlwaysStoppedAnimation<Color>(
                         Colors.white,
@@ -629,7 +664,7 @@ class ProfileScreenNew extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Profile Completion: 100%',
+                    'Profile Completion: 75%',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Colors.white70,
                     ),
@@ -638,7 +673,7 @@ class ProfileScreenNew extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(isMobile ? 16 : 20),
               child: Column(
                 children: [
                   const Row(
@@ -650,39 +685,57 @@ class ProfileScreenNew extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  const _ProfileSection(
+                  _ProfileSection(
                     title: 'Personal Info',
                     children: [
-                      _ProfileItem(label: 'Email', value: 'demo@internmatch.ai'),
-                      _ProfileItem(label: 'Phone', value: '+91-9876543210'),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const _ProfileSection(
-                    title: 'Academic Details',
-                    children: [
-                      _ProfileItem(label: 'Degree', value: 'B.Tech - Computer'),
+                      _ProfileItem(
+                        label: 'Email',
+                        value: profile.email.isNotEmpty 
+                            ? profile.email 
+                            : 'Not provided',
+                      ),
+                      _ProfileItem(
+                        label: 'Phone',
+                        value: profile.phone.isNotEmpty 
+                            ? profile.phone 
+                            : 'Not provided',
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   _ProfileSection(
-                    title: 'Skills',
+                    title: 'Academic Details',
                     children: [
-                      Wrap(
-                        spacing: 8,
-                        children: ['React', 'Python', 'JavaScript']
-                            .map((skill) => Chip(
-                          label: Text(skill),
-                          backgroundColor: AppColors.primary.withOpacity(0.1),
-                          side: const BorderSide(color: AppColors.primary),
-                        ))
-                            .toList(),
+                      _ProfileItem(
+                        label: 'Degree',
+                        value: profile.degree.isNotEmpty 
+                            ? profile.degree 
+                            : 'Not specified',
                       ),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  if (profile.skills.isNotEmpty)
+                    _ProfileSection(
+                      title: 'Skills',
+                      children: [
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: profile.skills
+                              .map((skill) => Chip(
+                            label: Text(skill),
+                            backgroundColor: AppColors.primary.withOpacity(0.1),
+                            side: const BorderSide(color: AppColors.primary),
+                          ))
+                              .toList(),
+                        ),
+                      ],
+                    ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
+                    height: isMobile ? 48 : 56,
                     child: ElevatedButton(
                       onPressed: () async {
                         await ref.read(authProvider.notifier).logout();
@@ -695,6 +748,7 @@ class ProfileScreenNew extends ConsumerWidget {
                         '← Logout',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           color: Colors.white,
+                          fontSize: isMobile ? 14 : 16,
                         ),
                       ),
                     ),
@@ -751,7 +805,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _InternshipCard extends StatelessWidget {
+class _InternshipCard extends StatefulWidget {
   final String internshipId;
   final String company;
   final String title;
@@ -767,6 +821,13 @@ class _InternshipCard extends StatelessWidget {
     required this.location,
     required this.skills,
   });
+
+  @override
+  State<_InternshipCard> createState() => _InternshipCardState();
+}
+
+class _InternshipCardState extends State<_InternshipCard> {
+  bool _isSaved = false;
 
   @override
   Widget build(BuildContext context) {
@@ -791,7 +852,7 @@ class _InternshipCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    company[0],
+                    widget.company[0],
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -806,7 +867,7 @@ class _InternshipCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      widget.title,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -814,7 +875,7 @@ class _InternshipCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      company,
+                      widget.company,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -823,15 +884,28 @@ class _InternshipCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.bookmark_outline),
-                onPressed: () {},
+                icon: Icon(
+                  _isSaved ? Icons.bookmark : Icons.bookmark_outline,
+                  color: _isSaved ? AppColors.primary : AppColors.textSecondary,
+                ),
+                onPressed: () {
+                  setState(() => _isSaved = !_isSaved);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        _isSaved ? 'Added to saved' : 'Removed from saved',
+                      ),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
               ),
             ],
           ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 6,
-            children: skills
+            children: widget.skills
                 .map((skill) => Chip(
               label: Text(skill),
               backgroundColor: AppColors.primary.withOpacity(0.1),
@@ -850,13 +924,13 @@ class _InternshipCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    salary,
+                    widget.salary,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
-                    location,
+                    widget.location,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -864,7 +938,15 @@ class _InternshipCard extends StatelessWidget {
                 ],
               ),
               ElevatedButton(
-                onPressed: () => context.go('${AppRoutes.mainShell}/internship/$internshipId'),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Applied to ${widget.company}'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                  context.go('${AppRoutes.mainShell}/internship/${widget.internshipId}');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                 ),

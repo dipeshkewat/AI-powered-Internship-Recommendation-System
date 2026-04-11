@@ -1,98 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/app_providers.dart';
-import '../screens/splash_screen.dart';
-import '../screens/welcome_screen_new.dart';
-import '../screens/auth_screen_new.dart';
-import '../screens/main_shell_new.dart';
-import '../screens/onboarding_new.dart';
-import '../screens/internship_detail_new.dart';
-
-// ─── Route names (use these everywhere — no raw strings) ─────────────────────
+import 'package:internmatch/providers/user_provider.dart';
+import 'package:internmatch/screens/welcome_screen.dart';
+import 'package:internmatch/screens/auth_screen.dart';
+import 'package:internmatch/screens/dashboard_screen.dart';
 
 class AppRoutes {
-  AppRoutes._();
-
-  static const String splash = '/';
-  static const String welcome = '/welcome';
+  static const String welcome = '/';
   static const String auth = '/auth';
-  static const String onboarding = '/onboarding';
-  static const String mainShell = '/main-shell';
+  static const String onboardingEducation = '/onboarding/education';
+  static const String onboardingExperience = '/onboarding/experience';
+  static const String onboardingPastInternship = '/onboarding/past-internship';
+  static const String onboardingBasicInfo = '/onboarding/basic-info';
+  static const String onboardingAcademic = '/onboarding/academic';
+  static const String onboardingSkills = '/onboarding/skills';
+  static const String onboardingInterests = '/onboarding/interests';
+  static const String onboardingPreferences = '/onboarding/preferences';
+  static const String dashboard = '/dashboard';
+  static const String recommendations = '/recommendations';
+  static const String search = '/search';
+  static const String saved = '/saved';
+  static const String applications = '/applications';
+  static const String profile = '/profile';
+  static const String editProfile = '/profile/edit';
+  static const String notifications = '/notifications';
   static const String internshipDetail = '/internship/:id';
+  static const String settings = '/settings';
 }
 
-// ─── Router provider ─────────────────────────────────────────────────────────
-
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final userState = ref.watch(userProvider);
 
   return GoRouter(
-    initialLocation: AppRoutes.splash,
-    debugLogDiagnostics: false,
-
-    // ── Redirect guard ──────────────────────────────────────────────────────
-    redirect: (context, state) {
-      final isAuth = authState.isAuthenticated;
-      final loc = state.matchedLocation;
-
-      final isPublicRoute = loc == AppRoutes.auth ||
-          loc == AppRoutes.welcome ||
-          loc == AppRoutes.splash ||
-          loc.startsWith(AppRoutes.onboarding);
-
-      // Not logged in and trying to reach a protected route
-      if (!isAuth && !isPublicRoute) {
-        return AppRoutes.welcome;
-      }
-
-      // Already logged in, no need to show welcome/login
-      if (isAuth &&
-          (loc == AppRoutes.welcome || loc == AppRoutes.auth)) {
-        return AppRoutes.mainShell;
-      }
-
-      return null; // No redirect
-    },
-
+    initialLocation: AppRoutes.welcome,
     routes: [
       GoRoute(
-        path: AppRoutes.splash,
-        builder: (_, __) => const SplashScreen(),
-      ),
-      GoRoute(
         path: AppRoutes.welcome,
-        builder: (_, __) => const WelcomeScreenNew(),
+        builder: (context, state) => const WelcomeScreen(),
       ),
       GoRoute(
         path: AppRoutes.auth,
-        builder: (context, state) {
-          final mode = state.uri.queryParameters['mode'] ?? 'login';
-          return AuthScreenNew(mode: mode);
-        },
+        builder: (context, state) => const AuthScreen(),
       ),
       GoRoute(
-        path: AppRoutes.onboarding,
-        builder: (_, __) => const OnboardingScreenNew(),
+        path: AppRoutes.dashboard,
+        builder: (context, state) => const DashboardScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.mainShell,
-        builder: (_, __) => const MainShellNew(),
-        routes: [
-          GoRoute(
-            path: 'internship/:id',
-            builder: (context, state) {
-              final internshipId = state.pathParameters['id'] ?? '';
-              return InternshipDetailScreenNew(internshipId: internshipId);
-            },
-          ),
-        ],
+      // TODO: Add remaining onboarding routes
+      // TODO: Add app routes (recommendations, search, saved, etc.)
+    ],
+    redirect: (context, state) {
+      if (!userState.isAuthenticated && state.matchedLocation != AppRoutes.welcome && state.matchedLocation != AppRoutes.auth) {
+        return AppRoutes.welcome;
+      }
+      return null;
+    },
+  );
+});
+
       ),
     ],
 
     // ── Error page ───────────────────────────────────────────────────────────
     errorBuilder: (context, state) => Scaffold(
-      body: Center(
+      body = Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

@@ -31,8 +31,9 @@ class InternMatchApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'InternMatch',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       routerConfig: router,
     );
   }
 }
+

@@ -63,6 +63,27 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
         );
       }
 
+      // Check for auth errors
+      final authState = ref.read(authProvider);
+      if (authState.error != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authState.error ?? 'Authentication failed'),
+              backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // Load user profile after successful auth
+      if (authState.userId != null) {
+        await ref.read(profileProvider.notifier).loadProfile(authState.userId!);
+      }
+
       if (mounted) {
         final storage = await StorageService.getInstance();
         if (storage.onboardingDone) {
@@ -75,13 +96,18 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text(
+              e.toString().replaceAll('Exception: ', ''),
+            ),
             backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -127,6 +153,20 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isMobile = screenSize.width < 600;
+    
+    // Responsive sizing
+    final headerPadding = isMobile ? 16.0 : 24.0;
+    final formPadding = isMobile ? 16.0 : 24.0;
+    final buttonHeight = isMobile ? 48.0 : 56.0;
+    final spacingSmall = isMobile ? 6.0 : 8.0;
+    final spacingMedium = isMobile ? 12.0 : 20.0;
+    final spacingLarge = isMobile ? 20.0 : 32.0;
+    final backButtonSize = isMobile ? 36.0 : 40.0;
+    final backButtonIconSize = isMobile ? 16.0 : 18.0;
+    final formCardMarginTop = isMobile ? 20.0 : 40.0;
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -145,30 +185,31 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(headerPadding),
                   child: Row(
                     children: [
                       GestureDetector(
                         onTap: () => context.pop(),
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          width: backButtonSize,
+                          height: backButtonSize,
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_back_ios_new,
                             color: Colors.white,
-                            size: 18,
+                            size: backButtonIconSize,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: isMobile ? 8 : 12),
                       RichText(
                         text: TextSpan(
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             color: Colors.white,
+                            fontSize: isMobile ? 20 : 24,
                           ),
                           children: [
                             const TextSpan(text: 'Inter'),
@@ -189,7 +230,12 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                 Transform.translate(
                   offset: const Offset(0, 0),
                   child: Container(
-                    margin: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+                    margin: EdgeInsets.fromLTRB(
+                      isMobile ? 12 : 20,
+                      formCardMarginTop,
+                      isMobile ? 12 : 20,
+                      0,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
@@ -198,7 +244,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                       children: [
                         // Title
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                          padding: EdgeInsets.fromLTRB(formPadding, formPadding, formPadding, spacingSmall),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Column(
@@ -208,9 +254,10 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                   _mode == 'login' ? 'Welcome back 👋' : 'Create account 🚀',
                                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                     fontWeight: FontWeight.w700,
+                                    fontSize: isMobile ? 22 : 28,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: spacingSmall),
                                 Text(
                                   _mode == 'login'
                                       ? 'Login to continue'
@@ -226,7 +273,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
 
                         // Tabs
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                          padding: EdgeInsets.fromLTRB(formPadding, formPadding, formPadding, 0),
                           child: Row(
                             children: [
                               Expanded(
@@ -243,9 +290,10 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                           fontWeight: _mode == 'login'
                                               ? FontWeight.w600
                                               : FontWeight.w400,
+                                          fontSize: isMobile ? 14 : 16,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      SizedBox(height: spacingSmall),
                                       if (_mode == 'login')
                                         Container(
                                           height: 3,
@@ -272,9 +320,10 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                           fontWeight: _mode == 'signup'
                                               ? FontWeight.w600
                                               : FontWeight.w400,
+                                          fontSize: isMobile ? 14 : 16,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      SizedBox(height: spacingSmall),
                                       if (_mode == 'signup')
                                         Container(
                                           height: 3,
@@ -293,7 +342,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
 
                         // Form
                         Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: EdgeInsets.all(formPadding),
                           child: Form(
                             key: _formKey,
                             child: Column(
@@ -310,7 +359,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      SizedBox(height: spacingSmall),
                                       TextFormField(
                                         controller: _nameController,
                                         validator: _validateName,
@@ -344,7 +393,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 20),
+                                      SizedBox(height: spacingMedium),
                                     ],
                                   ),
 
@@ -359,7 +408,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: spacingSmall),
                                     TextFormField(
                                       controller: _emailController,
                                       validator: _validateEmail,
@@ -399,7 +448,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 20),
+                                SizedBox(height: spacingMedium),
 
                                 // Password
                                 Column(
@@ -412,7 +461,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: spacingSmall),
                                     TextFormField(
                                       controller: _passwordController,
                                       obscureText: !_showPassword,
@@ -450,7 +499,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 20),
+                                SizedBox(height: spacingMedium),
 
                                 // Confirm Password (Sign Up only)
                                 if (_mode == 'signup')
@@ -464,7 +513,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      const SizedBox(height: 8),
+                                      SizedBox(height: spacingSmall),
                                       TextFormField(
                                         controller: _confirmPasswordController,
                                         obscureText: !_showConfirmPassword,
@@ -504,14 +553,14 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 20),
+                                      SizedBox(height: spacingMedium),
                                     ],
                                   ),
 
                                 // Submit Button
                                 SizedBox(
                                   width: double.infinity,
-                                  height: 56,
+                                  height: buttonHeight,
                                   child: ElevatedButton(
                                     onPressed: _isLoading ? null : _handleSubmit,
                                     style: ElevatedButton.styleFrom(
@@ -544,7 +593,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
 
                                 // Terms
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 20),
+                                  padding: EdgeInsets.only(top: spacingMedium),
                                   child: Text.rich(
                                     TextSpan(
                                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -580,7 +629,7 @@ class _AuthScreenNewState extends ConsumerState<AuthScreenNew> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: spacingLarge),
               ],
             ),
           ),

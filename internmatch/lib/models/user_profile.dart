@@ -1,103 +1,159 @@
 class UserProfile {
-  final String id;
-  final String name;
+  // Auth
   final String email;
+  final String password;
+
+  // Onboarding
+  final String educationLevel; // "Graduate" | "Undergraduate" | ""
+  final String experienceLevel; // "Fresher" | "Intermediate" | ""
+  final bool? hasDoneInternship;
+  final String internshipDescription;
+
+  // Basic Info
+  final String fullName;
+  final String phoneNo;
+  final String avatarColor;
+
+  // Academic
+  final String degree;
+  final String branch;
+  final String currentYear;
+  final String cgpa;
+
+  // Skills
   final List<String> skills;
-  final double cgpa;
+  final List<String> tools;
+
+  // Interests
   final List<String> interests;
-  final String preferredLocation;
-  final String preferredType; // Remote / Hybrid / On-site / Any
-  final String? avatarUrl;
-  final String? college;
-  final int? graduationYear;
-  final String? resumeUrl;
+
+  // Preferences
+  final String preferredLocation; // "Remote" | "On-site" | ""
+  final String internshipType; // "Full-time" | "Part-time" | ""
+  final String duration; // "1 month" | "3 months" | "6 months" | ""
+
+  // App state
+  final bool isAuthenticated;
+  final bool onboardingComplete;
+  final List<String> savedInternships;
+  final List<AppliedInternship> appliedInternships;
+  final List<UserNotification> notifications;
 
   const UserProfile({
-    required this.id,
-    required this.name,
-    required this.email,
+    this.email = "",
+    this.password = "",
+    this.educationLevel = "",
+    this.experienceLevel = "",
+    this.hasDoneInternship,
+    this.internshipDescription = "",
+    this.fullName = "",
+    this.phoneNo = "",
+    this.avatarColor = "#5B4FCF",
+    this.degree = "",
+    this.branch = "",
+    this.currentYear = "",
+    this.cgpa = "",
     this.skills = const [],
-    this.cgpa = 7.0,
+    this.tools = const [],
     this.interests = const [],
-    this.preferredLocation = '',
-    this.preferredType = 'Any',
-    this.avatarUrl,
-    this.college,
-    this.graduationYear,
-    this.resumeUrl,
+    this.preferredLocation = "",
+    this.internshipType = "",
+    this.duration = "",
+    this.isAuthenticated = false,
+    this.onboardingComplete = false,
+    this.savedInternships = const [],
+    this.appliedInternships = const [],
+    this.notifications = const [],
   });
 
   UserProfile copyWith({
-    String? id,
-    String? name,
     String? email,
+    String? password,
+    String? educationLevel,
+    String? experienceLevel,
+    bool? hasDoneInternship,
+    String? internshipDescription,
+    String? fullName,
+    String? phoneNo,
+    String? avatarColor,
+    String? degree,
+    String? branch,
+    String? currentYear,
+    String? cgpa,
     List<String>? skills,
-    double? cgpa,
+    List<String>? tools,
     List<String>? interests,
     String? preferredLocation,
-    String? preferredType,
-    String? avatarUrl,
-    String? college,
-    int? graduationYear,
-    String? resumeUrl,
+    String? internshipType,
+    String? duration,
+    bool? isAuthenticated,
+    bool? onboardingComplete,
+    List<String>? savedInternships,
+    List<AppliedInternship>? appliedInternships,
+    List<UserNotification>? notifications,
   }) {
     return UserProfile(
-      id: id ?? this.id,
-      name: name ?? this.name,
       email: email ?? this.email,
-      skills: skills ?? this.skills,
+      password: password ?? this.password,
+      educationLevel: educationLevel ?? this.educationLevel,
+      experienceLevel: experienceLevel ?? this.experienceLevel,
+      hasDoneInternship: hasDoneInternship ?? this.hasDoneInternship,
+      internshipDescription: internshipDescription ?? this.internshipDescription,
+      fullName: fullName ?? this.fullName,
+      phoneNo: phoneNo ?? this.phoneNo,
+      avatarColor: avatarColor ?? this.avatarColor,
+      degree: degree ?? this.degree,
+      branch: branch ?? this.branch,
+      currentYear: currentYear ?? this.currentYear,
       cgpa: cgpa ?? this.cgpa,
+      skills: skills ?? this.skills,
+      tools: tools ?? this.tools,
       interests: interests ?? this.interests,
       preferredLocation: preferredLocation ?? this.preferredLocation,
-      preferredType: preferredType ?? this.preferredType,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-      college: college ?? this.college,
-      graduationYear: graduationYear ?? this.graduationYear,
-      resumeUrl: resumeUrl ?? this.resumeUrl,
+      internshipType: internshipType ?? this.internshipType,
+      duration: duration ?? this.duration,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      onboardingComplete: onboardingComplete ?? this.onboardingComplete,
+      savedInternships: savedInternships ?? this.savedInternships,
+      appliedInternships: appliedInternships ?? this.appliedInternships,
+      notifications: notifications ?? this.notifications,
     );
   }
 
-  factory UserProfile.empty() => const UserProfile(
-        id: '',
-        name: '',
-        email: '',
-      );
-
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      email: json['email'] as String? ?? '',
-      skills: (json['skills'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
-      cgpa: (json['cgpa'] as num?)?.toDouble() ?? 7.0,
-      interests: (json['interests'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
-      preferredLocation: json['preferred_location'] as String? ?? '',
-      preferredType: json['preferred_type'] as String? ?? 'Any',
-      avatarUrl: json['avatar_url'] as String?,
-      college: json['college'] as String?,
-      graduationYear: json['graduation_year'] as int?,
-      resumeUrl: json['resume_url'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'email': email,
-        'skills': skills,
-        'cgpa': cgpa,
-        'interests': interests,
-        'preferred_location': preferredLocation,
-        'preferred_type': preferredType,
-        'avatar_url': avatarUrl,
-        'college': college,
-        'graduation_year': graduationYear,
-        'resume_url': resumeUrl,
-      };
+  factory UserProfile.empty() => const UserProfile();
 }
+
+class AppliedInternship {
+  final String id;
+  final String title;
+  final String company;
+  final String appliedDate;
+  final String status; // "Applied" | "Under Review" | "Shortlisted" | "Rejected" | "Selected"
+
+  const AppliedInternship({
+    required this.id,
+    required this.title,
+    required this.company,
+    required this.appliedDate,
+    required this.status,
+  });
+}
+
+class UserNotification {
+  final String id;
+  final String title;
+  final String message;
+  final String time;
+  final bool read;
+  final String type; // "match" | "application" | "reminder" | "news"
+
+  const UserNotification({
+    required this.id,
+    required this.title,
+    required this.message,
+    required this.time,
+    required this.read,
+    required this.type,
+  });
+}
+
