@@ -36,20 +36,27 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # ── Startup ───────────────────────────────────────────────────────────────
     logger.info("Connecting to MongoDB…")
-    await connect_db()
-    db = get_client()[settings.MONGODB_DB_NAME]
-    await create_indexes(db)
-    logger.info("MongoDB ready.")
+    try:
+        await connect_db()
+        db = get_client()[settings.MONGODB_DB_NAME]
+        await create_indexes(db)
+        logger.info("MongoDB ready.")
+    except Exception as e:
+        logger.error("MongoDB startup error (server will continue): %s", e)
 
     logger.info("Loading ML model…")
-    recommender.load()
-    logger.info("ML model ready.")
+    try:
+        recommender.load()
+        logger.info("ML model ready.")
+    except Exception as e:
+        logger.warning("ML model not loaded (will use fallback): %s", e)
 
     yield
 
     # ── Shutdown ──────────────────────────────────────────────────────────────
     logger.info("Closing MongoDB connection…")
     await close_db()
+
 
 
 def create_app() -> FastAPI:
