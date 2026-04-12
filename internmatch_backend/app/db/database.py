@@ -22,13 +22,17 @@ _db_available: bool = False
 async def connect_db() -> None:
     global _client, _db_available
     try:
-        # tlsAllowInvalidCertificates helps with Python 3.14 SSL issues
+        # Build the connection URL - add tlsInsecure for Python 3.14 compatibility
+        mongo_url = settings.MONGODB_URL
+        if "mongodb+srv" in mongo_url and "tlsInsecure" not in mongo_url:
+            separator = "&" if "?" in mongo_url else "?"
+            mongo_url = mongo_url + separator + "tlsInsecure=true"
+
         _client = AsyncIOMotorClient(
-            settings.MONGODB_URL,
-            serverSelectionTimeoutMS=5000,
-            connectTimeoutMS=5000,
-            socketTimeoutMS=10000,
-            tlsAllowInvalidCertificates=False,
+            mongo_url,
+            serverSelectionTimeoutMS=8000,
+            connectTimeoutMS=8000,
+            socketTimeoutMS=15000,
         )
         # Ping to verify connection on startup
         await _client.admin.command("ping")
