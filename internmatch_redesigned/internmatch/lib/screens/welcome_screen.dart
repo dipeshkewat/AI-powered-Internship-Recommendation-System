@@ -146,16 +146,16 @@ class WelcomeScreen extends StatelessWidget {
                       border: Border.all(
                           color: Colors.white.withOpacity(0.12)),
                     ),
-                    child: Column(
+                    child: const Column(
                       children: [
                         _FeatureRow(
                             icon: Icons.auto_awesome,
                             text: 'AI-powered internship matching'),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         _FeatureRow(
                             icon: Icons.trending_up_rounded,
                             text: 'Track all your applications'),
-                        const SizedBox(height: 14),
+                        SizedBox(height: 14),
                         _FeatureRow(
                             icon: Icons.recommend_outlined,
                             text: 'Get personalized recommendations'),

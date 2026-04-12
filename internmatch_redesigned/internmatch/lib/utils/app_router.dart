@@ -43,8 +43,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.mainShell,
-        pageBuilder: (context, state) => _fadePage(
-          state, const MainShell()),
+        pageBuilder: (context, state) {
+          final tabStr = state.uri.queryParameters['tab'];
+          final initialTab = tabStr != null ? int.parse(tabStr) : 0;
+          return _fadePage(
+            state, MainShell(initialTab: initialTab),
+          );
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

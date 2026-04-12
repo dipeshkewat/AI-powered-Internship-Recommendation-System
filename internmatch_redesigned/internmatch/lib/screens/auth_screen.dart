@@ -85,13 +85,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           _emailCtrl.text.trim(),
           _passwordCtrl.text,
         );
-        final user = ref.read(userProvider);
         if (mounted) {
-          if (user.onboardingComplete) {
-            context.go(AppRoutes.mainShell);
-          } else {
-            context.go(AppRoutes.onboarding);
-          }
+          context.go(AppRoutes.mainShell);
         }
       } else {
         await notifier.register(
@@ -99,7 +94,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           _passwordCtrl.text,
           name: _nameCtrl.text.trim(),
         );
-        if (mounted) context.go(AppRoutes.onboarding);
+        if (mounted) context.go(AppRoutes.mainShell);
       }
     } on DioException catch (e) {
       // Parse backend error message
@@ -456,11 +451,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                   ],
                                 ),
                                 const SizedBox(height: 6),
-                                Row(
+                                const Row(
                                   children: [
-                                    const Icon(Icons.circle,
+                                    Icon(Icons.circle,
                                         size: 6, color: AppColors.textMuted),
-                                    const SizedBox(width: 6),
+                                    SizedBox(width: 6),
                                     Text('demo@intermatch.ai',
                                         style: TextStyle(
                                             fontSize: 12,
@@ -468,11 +463,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                   ],
                                 ),
                                 const SizedBox(height: 3),
-                                Row(
+                                const Row(
                                   children: [
-                                    const Icon(Icons.circle,
+                                    Icon(Icons.circle,
                                         size: 6, color: AppColors.textMuted),
-                                    const SizedBox(width: 6),
+                                    SizedBox(width: 6),
                                     Text('demo123',
                                         style: TextStyle(
                                             fontSize: 12,
@@ -499,23 +494,23 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         const SizedBox(height: 20),
 
                         // Terms
-                        Text.rich(
+                        const Text.rich(
                           TextSpan(
                             text: 'By continuing, you agree to our ',
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textSecondary),
                             children: [
                               TextSpan(
                                 text: 'Terms of Service',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.w500),
                               ),
-                              const TextSpan(text: ' & '),
+                              TextSpan(text: ' & '),
                               TextSpan(
                                 text: 'Privacy Policy',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.w500),
                               ),

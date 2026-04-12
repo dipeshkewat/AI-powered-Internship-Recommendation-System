@@ -52,6 +52,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String? _typePref;
   String? _durationPref;
 
+  @override
+  void initState() {
+    super.initState();
+    final user = ref.read(userProvider);
+    _educationLevel = user.educationLevel.isNotEmpty ? user.educationLevel : null;
+    _experienceLevel = user.experienceLevel.isNotEmpty ? user.experienceLevel : null;
+    _hasDoneInternship = user.hasDoneInternship;
+    _nameCtrl.text = user.fullName;
+    _phoneCtrl.text = user.phoneNo;
+    _degree = user.degree.isNotEmpty ? user.degree : null;
+    _year = user.currentYear.isNotEmpty ? user.currentYear : null;
+    _cgpa = double.tryParse(user.cgpa) ?? 7.0;
+    _skills.addAll(user.skills);
+    _tools.addAll(user.tools);
+    _interests.addAll(user.interests);
+    _locPref = user.preferredLocation.isNotEmpty ? user.preferredLocation : null;
+    _typePref = user.internshipType.isNotEmpty ? user.internshipType : null;
+    _durationPref = user.duration.isNotEmpty ? user.duration : null;
+  }
+
   bool get _canContinue {
     switch (_step) {
       case 0:
@@ -91,6 +111,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _finish() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: AppColors.primary),
+            const SizedBox(height: 16),
+            const Text('Finding recommended internships...',
+                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, decoration: TextDecoration.none)),
+          ],
+        ),
+      ),
+    );
+
     final notifier = ref.read(userProvider.notifier);
     notifier.updateEducation(_educationLevel ?? '');
     notifier.updateExperience(_experienceLevel ?? '');
@@ -113,9 +149,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     final storage = await StorageService.getInstance();
     await storage.setOnboardingDone();
-    
 
-    if (mounted) context.go(AppRoutes.mainShell);
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      Navigator.of(context).pop(); // Dismiss loading
+      context.go('${AppRoutes.mainShell}?tab=1');
+    }
   }
 
   @override

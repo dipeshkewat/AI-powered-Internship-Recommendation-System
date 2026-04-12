@@ -15,14 +15,29 @@ import '../utils/app_router.dart';
 import '../widgets/app_components.dart';
 
 class MainShell extends ConsumerStatefulWidget {
-  const MainShell({super.key});
+  final int initialTab;
+  const MainShell({super.key, this.initialTab = 0});
 
   @override
   ConsumerState<MainShell> createState() => _MainShellState();
 }
 
 class _MainShellState extends ConsumerState<MainShell> {
-  int _tab = 0;
+  late int _tab;
+
+  @override
+  void initState() {
+    super.initState();
+    _tab = widget.initialTab;
+  }
+
+  @override
+  void didUpdateWidget(covariant MainShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialTab != widget.initialTab) {
+      _tab = widget.initialTab;
+    }
+  }
 
   static const _navItems = [
     BottomNavigationBarItem(
@@ -346,7 +361,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                           ),
                           const SizedBox(height: 14),
                           GestureDetector(
-                            onTap: () {},
+                            onTap: () => context.push(AppRoutes.onboarding),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 8),
@@ -682,19 +697,19 @@ class _SearchTabState extends ConsumerState<SearchTab> {
           // List
           Expanded(
             child: _results.isEmpty
-                ? Center(
+                ? const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.search_off_outlined,
                             size: 48, color: AppColors.textMuted),
-                        const SizedBox(height: 12),
-                        const Text('No results found',
+                        SizedBox(height: 12),
+                        Text('No results found',
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textSecondary)),
-                        const Text('Try a different search',
+                        Text('Try a different search',
                             style: TextStyle(
                                 fontSize: 13, color: AppColors.textMuted)),
                       ],
@@ -786,20 +801,20 @@ class SavedTab extends ConsumerWidget {
             ),
           ),
           saved.isEmpty
-              ? Expanded(
+              ? const Expanded(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.bookmark_border_outlined,
+                        Icon(Icons.bookmark_border_outlined,
                             size: 52, color: AppColors.textMuted),
-                        const SizedBox(height: 12),
-                        const Text('No saved internships',
+                        SizedBox(height: 12),
+                        Text('No saved internships',
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textSecondary)),
-                        const Text('Bookmark internships to find them here',
+                        Text('Bookmark internships to find them here',
                             style: TextStyle(
                                 fontSize: 13, color: AppColors.textMuted)),
                       ],
@@ -881,20 +896,20 @@ class AppliedTab extends ConsumerWidget {
             ),
           ),
           applied.isEmpty
-              ? Expanded(
+              ? const Expanded(
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.assignment_outlined,
+                        Icon(Icons.assignment_outlined,
                             size: 52, color: AppColors.textMuted),
-                        const SizedBox(height: 12),
-                        const Text('No applications yet',
+                        SizedBox(height: 12),
+                        Text('No applications yet',
                             style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.textSecondary)),
-                        const Text(
+                        Text(
                             'Apply to internships and track them here',
                             style: TextStyle(
                                 fontSize: 13, color: AppColors.textMuted)),
@@ -1180,13 +1195,13 @@ class ProfileTab extends ConsumerWidget {
                   if (user.skills.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _ProfileSection(
-                      title: 'Skills',
+                      title: 'Skills & Tools',
                       icon: Icons.code_outlined,
                       children: [
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: user.skills
+                          children: [...user.skills, ...user.tools]
                               .map((s) => Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 5),
@@ -1211,7 +1226,73 @@ class ProfileTab extends ConsumerWidget {
                     ),
                   ],
 
+                  if (user.interests.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    _ProfileSection(
+                      title: 'Interests',
+                      icon: Icons.favorite_border,
+                      children: [
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: user.interests
+                              .map((i) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accent.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: AppColors.accent.withOpacity(0.2)),
+                                    ),
+                                    child: Text(i,
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.accent,
+                                            fontWeight: FontWeight.w500)),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ],
+
+                  const SizedBox(height: 16),
+                  
+                  _ProfileSection(
+                    title: 'Preferences & Experience',
+                    icon: Icons.settings_outlined,
+                    children: [
+                      _InfoRow(label: 'Education', value: user.educationLevel.isNotEmpty ? user.educationLevel : 'Not specified'),
+                      _InfoRow(label: 'Experience', value: user.experienceLevel.isNotEmpty ? user.experienceLevel : 'Not specified'),
+                      _InfoRow(label: 'Location Pref', value: user.preferredLocation.isNotEmpty ? user.preferredLocation : 'Not specified'),
+                      _InfoRow(label: 'Type Pref', value: user.internshipType.isNotEmpty ? user.internshipType : 'Not specified'),
+                      _InfoRow(label: 'Duration Pref', value: user.duration.isNotEmpty ? user.duration : 'Not specified'),
+                    ],
+                  ),
+
                   const SizedBox(height: 24),
+
+                  // Edit Profile
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.push(AppRoutes.onboarding);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                      child: const Text('Edit Profile',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
 
                   // Logout
                   SizedBox(

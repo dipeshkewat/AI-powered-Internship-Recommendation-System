@@ -1,7 +1,7 @@
 import 'package:internmatch/models/internship.dart';
 
 final List<Internship> internshipData = [
-  Internship(
+  const Internship(
     id: "1",
     title: "Frontend Developer Intern",
     company: "Google",
@@ -27,7 +27,7 @@ final List<Internship> internshipData = [
     openings: 5,
     matchScore: 92,
   ),
-  Internship(
+  const Internship(
     id: "2",
     title: "Machine Learning Intern",
     company: "Microsoft",
@@ -53,7 +53,7 @@ final List<Internship> internshipData = [
     openings: 3,
     matchScore: 88,
   ),
-  Internship(
+  const Internship(
     id: "3",
     title: "Android App Developer Intern",
     company: "Flipkart",
@@ -79,7 +79,7 @@ final List<Internship> internshipData = [
     openings: 4,
     matchScore: 85,
   ),
-  Internship(
+  const Internship(
     id: "4",
     title: "Data Science Intern",
     company: "Amazon",
@@ -105,7 +105,7 @@ final List<Internship> internshipData = [
     openings: 6,
     matchScore: 80,
   ),
-  Internship(
+  const Internship(
     id: "5",
     title: "Cybersecurity Intern",
     company: "Oracle",
@@ -131,7 +131,7 @@ final List<Internship> internshipData = [
     openings: 2,
     matchScore: 75,
   ),
-  Internship(
+  const Internship(
     id: "6",
     title: "DevOps Intern",
     company: "Adobe",
