@@ -38,24 +38,14 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            SizedBox(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.work_outline_rounded,
-                color: AppColors.primary,
-                size: 40,
+              child: Image.asset(
+                'assets/images/app_logo.png',
+                width: 80,
+                height: 80,
+                fit: BoxFit.contain,
               ),
             )
                 .animate()

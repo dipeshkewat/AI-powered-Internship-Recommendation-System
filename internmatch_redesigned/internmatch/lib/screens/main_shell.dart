@@ -13,6 +13,7 @@ import '../providers/user_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_router.dart';
 import '../widgets/app_components.dart';
+import 'internship_detail_screen.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   final int initialTab;
@@ -435,6 +436,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                       stipend: item.stipend,
                       locationType: item.locationType,
                       duration: item.duration,
+                      onTap: () => showInternshipDetail(context, item),
                     ).animate().fadeIn(delay: (i * 80).ms);
                   },
                 ),
@@ -519,7 +521,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                           .read(userProvider.notifier)
                           .toggleSaveInternship(item.id);
                     },
-                    onTap: () {},
+                    onTap: () => showInternshipDetail(context, item),
                   ).animate().fadeIn(duration: 300.ms),
                 );
               }),
@@ -739,6 +741,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                         onSave: () => ref
                             .read(userProvider.notifier)
                             .toggleSaveInternship(item.id),
+                        onTap: () => showInternshipDetail(ctx, item),
                       ).animate().fadeIn(delay: (i * 50).ms);
                     },
                   ),
@@ -844,6 +847,7 @@ class SavedTab extends ConsumerWidget {
                         onSave: () => ref
                             .read(userProvider.notifier)
                             .toggleSaveInternship(item.id),
+                        onTap: () => showInternshipDetail(ctx, item),
                       ).animate().fadeIn(delay: (i * 60).ms);
                     },
                   ),

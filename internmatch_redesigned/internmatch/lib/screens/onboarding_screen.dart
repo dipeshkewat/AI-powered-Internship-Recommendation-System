@@ -193,8 +193,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.work_outline_rounded,
-                                color: Colors.white, size: 16),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.asset(
+                                'assets/images/app_logo.png',
+                                width: 30,
+                                height: 30,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           const Text('InternMatch',

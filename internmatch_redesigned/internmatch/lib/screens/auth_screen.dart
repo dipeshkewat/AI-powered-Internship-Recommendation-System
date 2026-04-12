@@ -182,17 +182,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                       // Logo row
                       Row(
                         children: [
-                          Container(
+                          SizedBox(
                             width: 38,
                             height: 38,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.work_outline_rounded,
-                              color: AppColors.primary,
-                              size: 20,
+                            child: Image.asset(
+                              'assets/images/app_logo.png',
+                              width: 38,
+                              height: 38,
+                              fit: BoxFit.contain,
                             ),
                           ),
                           const SizedBox(width: 10),
