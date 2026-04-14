@@ -490,7 +490,7 @@ class _Step5Academics extends StatelessWidget {
   });
 
   static const _degrees = ['B.Sc', 'B.Tech', 'B.E', 'BCA', 'MCA', 'M.Tech', 'MBA', 'Other'];
-  static const _years = ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Final Year'];
+  static const _years = ['1st Year', '2nd Year', '3rd Year', 'Final Year'];
 
   String get _cgpaLabel {
     if (cgpa >= 9) return 'Excellent 🏆';
@@ -987,19 +987,6 @@ class _Step8Preferences extends StatelessWidget {
               Icons.work_history_outlined,
             ],
             onSelect: onType,
-          ),
-          const SizedBox(height: 20),
-          _PrefSection(
-            label: 'DURATION',
-            options: const ['1 month', '3 months', '6 months', '1 year'],
-            selected: durationPref,
-            icons: const [
-              Icons.calendar_month_outlined,
-              Icons.calendar_month_outlined,
-              Icons.calendar_month_outlined,
-              Icons.calendar_month_outlined,
-            ],
-            onSelect: onDuration,
           ),
         ],
       ),
