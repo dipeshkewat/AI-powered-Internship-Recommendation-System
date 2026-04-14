@@ -62,8 +62,9 @@ async def get_recommendations(
         preferred_type=payload.preferred_type,
     )
 
-    # 2. Fetch internships (limit to a reasonable working set)
-    cursor = db.internships.find({}).limit(500)
+    # 2. Fetch internships from db to rank them
+    # Removed .limit(500) so it can score from the full 10,000 pool instead of always the same 500 docs.
+    cursor = db.internships.find({})
     internships_raw = [doc async for doc in cursor]
 
     # 3. Score each internship
