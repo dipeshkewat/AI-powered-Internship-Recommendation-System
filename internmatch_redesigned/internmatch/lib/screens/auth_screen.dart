@@ -124,15 +124,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     }
   }
 
-  void _fillDemo() {
-    // Fill with demo credentials — register a demo account if needed
-    if (!_isLogin) {
-      _nameCtrl.text = 'Demo User';
-      _confirmCtrl.text = 'demo123';
-    }
-    _emailCtrl.text = 'demo@internmatch.ai';
-    _passwordCtrl.text = 'demo123';
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -412,69 +404,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
                         const SizedBox(height: 16),
 
-                        // Quick demo access
-                        GestureDetector(
-                          onTap: _fillDemo,
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color:
-                                      AppColors.primary.withOpacity(0.15)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.bolt,
-                                        color: AppColors.primary, size: 16),
-                                    const SizedBox(width: 6),
-                                    const Text('Quick Demo Access',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.primary,
-                                        )),
-                                    const Spacer(),
-                                    Text('Tap to fill',
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            color: AppColors.primary
-                                                .withOpacity(0.6))),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                const Row(
-                                  children: [
-                                    Icon(Icons.circle,
-                                        size: 6, color: AppColors.textMuted),
-                                    SizedBox(width: 6),
-                                    Text('demo@intermatch.ai',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: AppColors.textSecondary)),
-                                  ],
-                                ),
-                                const SizedBox(height: 3),
-                                const Row(
-                                  children: [
-                                    Icon(Icons.circle,
-                                        size: 6, color: AppColors.textMuted),
-                                    SizedBox(width: 6),
-                                    Text('demo123',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: AppColors.textSecondary)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+
 
                         const SizedBox(height: 20),
 

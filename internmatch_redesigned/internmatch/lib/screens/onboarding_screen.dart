@@ -114,13 +114,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => Center(
+      builder: (_) => const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(color: AppColors.primary),
-            const SizedBox(height: 16),
-            const Text('Finding recommended internships...',
+            CircularProgressIndicator(color: AppColors.primary),
+            SizedBox(height: 16),
+            Text('Finding recommended internships...',
                 style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, decoration: TextDecoration.none)),
           ],
         ),

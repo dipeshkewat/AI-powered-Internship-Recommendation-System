@@ -233,7 +233,7 @@ class _InternshipDetailSheetState
                       const SizedBox(height: 18),
 
                       // ── Info grid ─────────────────────────
-                      _SectionLabel('Job Details'),
+                      const _SectionLabel('Job Details'),
                       const SizedBox(height: 10),
                       GridView.count(
                         crossAxisCount: 2,
@@ -300,7 +300,7 @@ class _InternshipDetailSheetState
                       const SizedBox(height: 22),
 
                       // ── Description ───────────────────────
-                      _SectionLabel('About the Role'),
+                      const _SectionLabel('About the Role'),
                       const SizedBox(height: 10),
                       Container(
                         width: double.infinity,
@@ -324,7 +324,7 @@ class _InternshipDetailSheetState
 
                       // ── Responsibilities / Job Role ───────
                       if (intern.responsibilities.isNotEmpty) ...[
-                        _SectionLabel('Responsibilities'),
+                        const _SectionLabel('Responsibilities'),
                         const SizedBox(height: 10),
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -381,7 +381,7 @@ class _InternshipDetailSheetState
                       ],
 
                       // ── Required Skills ───────────────────
-                      _SectionLabel('Required Skills'),
+                      const _SectionLabel('Required Skills'),
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,
@@ -410,7 +410,7 @@ class _InternshipDetailSheetState
                       // ── Tools ─────────────────────────────
                       if (intern.tools.isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        _SectionLabel('Tools & Platforms'),
+                        const _SectionLabel('Tools & Platforms'),
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 8,
@@ -449,7 +449,7 @@ class _InternshipDetailSheetState
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.background,
-                  border: Border(
+                  border: const Border(
                       top: BorderSide(color: AppColors.border, width: 1)),
                   boxShadow: [
                     BoxShadow(
@@ -507,7 +507,7 @@ class _InternshipDetailSheetState
                           height: 52,
                           decoration: BoxDecoration(
                             gradient: _applied
-                                ? LinearGradient(colors: [
+                                ? const LinearGradient(colors: [
                                     AppColors.success,
                                     AppColors.success,
                                   ])
