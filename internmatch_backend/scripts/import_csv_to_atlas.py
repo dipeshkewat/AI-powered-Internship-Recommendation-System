@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.core.config import settings
 from app.core.security import hash_password
+import bcrypt
 
 INTERNSHIP_CSV = Path(__file__).resolve().parent.parent / "internship_listings_10000.csv"
 USER_CSV = Path(__file__).resolve().parent.parent / "user_training_data.csv"
@@ -72,11 +73,14 @@ async def import_data():
     for i in range(0, len(internship_docs), chunk_size):
         chunk = internship_docs[i:i + chunk_size]
         await db.internships.insert_many(chunk)
-    print(f"✅ Successfully inserted {len(internship_docs)} internships.")
+    print(f"Successfully inserted {len(internship_docs)} internships.")
 
     # 2. Process and Import Users
     print(f"Reading {USER_CSV}...")
     df_users = pd.read_csv(USER_CSV)
+    
+    # Pre-calculate default password hash to speed up insertion
+    default_password_hash = hash_password("password123")
     
     user_docs = []
     for _, row in df_users.iterrows():
@@ -88,8 +92,13 @@ async def import_data():
         doc["email"] = doc.get("email", "").lower()
         
         # Hash user passwords before insertion to maintain authentication security
-        plain_password = str(doc.get("password", "password123"))
-        doc["password_hash"] = hash_password(plain_password)
+        raw_pw = doc.get("password")
+        plain_password = str(raw_pw) if raw_pw else "password123"
+        
+        # Use fast bcrypt (rounds=4) for bulk mock data import
+        fast_hash = bcrypt.hashpw(plain_password.encode("utf-8"), bcrypt.gensalt(rounds=4)).decode("utf-8")
+        doc["password_hash"] = fast_hash
+            
         # remove plain text password from being stored
         if "password" in doc:
             del doc["password"]
@@ -112,7 +121,7 @@ async def import_data():
         chunk = user_docs[i:i + chunk_size]
         await db.users.insert_many(chunk)
         
-    print(f"✅ Successfully inserted {len(user_docs)} users.")
+    print(f"Successfully inserted {len(user_docs)} users.")
     
     client.close()
     print("Database migration complete.")
