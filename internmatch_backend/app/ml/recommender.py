@@ -36,8 +36,11 @@ ALL_SKILLS = [
 ]
 
 ALL_DOMAINS = [
-    "AI/ML", "App Dev", "Web", "Data Science",
-    "Cloud", "DevOps", "Cybersecurity", "UI/UX", "Blockchain", "Game Dev",
+    "AI/ML", "App Dev", "Blockchain", "Cloud", "Cybersecurity", "Data Science",
+    "DevOps", "Game Dev", "UI/UX", "Web",
+    "Full Stack Development", "Android Development", "NLP / GenAI", 
+    "Embedded Systems / IoT", "Data Engineering", "Web Development", 
+    "iOS Development", "Computer Vision", "Machine Learning", "Cloud Computing",
 ]
 
 ALL_LOCATIONS = ["Remote", "Bangalore, India", "Mumbai, India", "Hyderabad, India", "Other"]
