@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../models/internship.dart';
@@ -55,15 +56,28 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final cgpa = double.tryParse(profile.cgpa) ?? 0.0;
-      final results = await _apiService.getRecommendations(
-        skills: profile.skills,
-        cgpa: cgpa,
-        interests: profile.interests,
-        preferredLocation: profile.preferredLocation,
-        preferredType: profile.internshipType.isNotEmpty
-            ? profile.internshipType
-            : 'Any',
-      );
+      Future<List<Internship>> fetchFromApi() {
+        return _apiService.getRecommendations(
+          skills: profile.skills,
+          cgpa: cgpa,
+          interests: profile.interests,
+          preferredLocation: profile.preferredLocation,
+          preferredType:
+              profile.internshipType.isNotEmpty ? profile.internshipType : 'Any',
+        );
+      }
+
+      List<Internship> results;
+      try {
+        results = await fetchFromApi();
+      } on DioException catch (e) {
+        if (e.response?.statusCode == 401) {
+          await _apiService.clearAuth();
+          results = await fetchFromApi();
+        } else {
+          rethrow;
+        }
+      }
       state = state.copyWith(
         internships: results,
         isLoading: false,
@@ -149,9 +163,20 @@ class SearchNotifier extends StateNotifier<SearchState> {
   Future<void> _loadAll() async {
     state = state.copyWith(isLoading: true);
     try {
-      final results = await _apiService.searchInternships();
+      List<Internship> results;
+      try {
+        results = await _apiService.searchInternships();
+      } on DioException catch (e) {
+        if (e.response?.statusCode == 401) {
+          await _apiService.clearAuth();
+          results = await _apiService.searchInternships();
+        } else {
+          rethrow;
+        }
+      }
       state = state.copyWith(results: results, isLoading: false);
-    } catch (_) {
+    } catch (e) {
+      print('API SEARCH ERROR (_loadAll): $e');
       // Fall back to local data
       state = state.copyWith(results: internshipData, isLoading: false);
     }
@@ -160,13 +185,28 @@ class SearchNotifier extends StateNotifier<SearchState> {
   Future<void> search(String query) async {
     state = state.copyWith(isLoading: true, query: query);
     try {
-      final results = await _apiService.searchInternships(
-        query: query.isNotEmpty ? query : null,
-        domain: state.selectedDomain,
-        type: state.selectedType,
-      );
+      Future<List<Internship>> searchApi() {
+        return _apiService.searchInternships(
+          query: query.isNotEmpty ? query : null,
+          domain: state.selectedDomain,
+          type: state.selectedType,
+        );
+      }
+
+      List<Internship> results;
+      try {
+        results = await searchApi();
+      } on DioException catch (e) {
+        if (e.response?.statusCode == 401) {
+          await _apiService.clearAuth();
+          results = await searchApi();
+        } else {
+          rethrow;
+        }
+      }
       state = state.copyWith(results: results, isLoading: false);
-    } catch (_) {
+    } catch (e) {
+      print('API SEARCH ERROR (search): $e');
       // Filter local data
       final filtered = internshipData.where((i) {
         final matchQ = query.isEmpty ||
@@ -186,11 +226,25 @@ class SearchNotifier extends StateNotifier<SearchState> {
       selectedType: type,
     );
     try {
-      final results = await _apiService.searchInternships(
-        query: state.query.isNotEmpty ? state.query : null,
-        domain: domain,
-        type: type,
-      );
+      Future<List<Internship>> filterApi() {
+        return _apiService.searchInternships(
+          query: state.query.isNotEmpty ? state.query : null,
+          domain: domain,
+          type: type,
+        );
+      }
+
+      List<Internship> results;
+      try {
+        results = await filterApi();
+      } on DioException catch (e) {
+        if (e.response?.statusCode == 401) {
+          await _apiService.clearAuth();
+          results = await filterApi();
+        } else {
+          rethrow;
+        }
+      }
       state = state.copyWith(results: results, isLoading: false);
     } catch (_) {
       final filtered = internshipData.where((i) {

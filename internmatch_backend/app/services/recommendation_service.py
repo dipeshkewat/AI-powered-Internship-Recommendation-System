@@ -12,7 +12,7 @@ Flow:
 """
 
 import math
-from typing import List
+from typing import List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -50,7 +50,7 @@ def _compute_score(
 
 async def get_recommendations(
     db: AsyncIOMotorDatabase,
-    user_id: str,
+    user_id: Optional[str],
     payload: RecommendationRequest,
 ) -> List[InternshipResponse]:
     # 1. Get domain probabilities from ML model
@@ -85,7 +85,7 @@ async def get_recommendations(
     top = scored[: payload.top_n]
 
     # 5. Enrich with bookmark / applied meta
-    bookmarked, applied = await _user_meta(db, user_id)
+    bookmarked, applied = await _user_meta(db, user_id) if user_id else (set(), set())
 
     return [
         _doc_to_response(

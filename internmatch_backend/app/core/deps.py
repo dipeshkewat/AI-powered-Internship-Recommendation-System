@@ -4,7 +4,7 @@ app/core/deps.py
 FastAPI dependency-injection helpers.
 """
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -15,6 +15,9 @@ from app.db.database import get_db, is_db_available
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/login", auto_error=False
+)
 
 
 async def get_db_or_503():
@@ -49,6 +52,23 @@ async def get_current_user_id(
     return user_id
 
 
+async def get_optional_current_user_id(
+    token: Annotated[Optional[str], Depends(oauth2_scheme_optional)],
+) -> Optional[str]:
+    """
+    Returns user_id from Bearer JWT when provided, otherwise None.
+    Invalid tokens still raise 401 to avoid silently accepting bad auth state.
+    """
+    if not token:
+        return None
+    try:
+        return await get_current_user_id(token)
+    except HTTPException:
+        # Public endpoints should continue without user context if token is stale.
+        return None
+
+
 # Convenience type alias
 CurrentUserId = Annotated[str, Depends(get_current_user_id)]
+OptionalCurrentUserId = Annotated[Optional[str], Depends(get_optional_current_user_id)]
 DB = Annotated[AsyncIOMotorDatabase, Depends(get_db_or_503)]

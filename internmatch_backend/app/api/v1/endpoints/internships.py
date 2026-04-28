@@ -11,7 +11,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from app.core.deps import DB, CurrentUserId
+from app.core.deps import DB, CurrentUserId, OptionalCurrentUserId
 from app.schemas.internship import (
     InternshipCreate,
     InternshipResponse,
@@ -26,7 +26,7 @@ router = APIRouter(prefix="/internships", tags=["internships"])
 @router.get("", response_model=InternshipListResponse)
 async def search_internships(
     db: DB,
-    current_user: CurrentUserId,
+    current_user: OptionalCurrentUserId,
     q: Optional[str] = Query(None, description="Full-text keyword search"),
     domain: Optional[str] = Query(None, description="Filter by domain (e.g. AI/ML)"),
     type: Optional[str] = Query(None, description="Remote / Hybrid / On-site"),
@@ -50,7 +50,7 @@ async def search_internships(
 async def get_internship(
     internship_id: str,
     db: DB,
-    current_user: CurrentUserId,
+    current_user: OptionalCurrentUserId,
 ):
     return await internship_service.get_internship(db, internship_id, current_user)
 

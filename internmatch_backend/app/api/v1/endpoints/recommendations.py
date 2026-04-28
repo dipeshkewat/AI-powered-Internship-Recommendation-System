@@ -6,7 +6,7 @@ POST /recommendations  – ML-ranked internship list for the current user
 
 from fastapi import APIRouter
 
-from app.core.deps import DB, CurrentUserId
+from app.core.deps import DB, OptionalCurrentUserId
 from app.schemas.internship import RecommendationRequest, RecommendationResponse
 from app.services.recommendation_service import get_recommendations
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 async def recommendations(
     payload: RecommendationRequest,
     db: DB,
-    current_user: CurrentUserId,
+    current_user: OptionalCurrentUserId,
 ):
     """
     Accepts user profile features and returns a ranked list of internships
