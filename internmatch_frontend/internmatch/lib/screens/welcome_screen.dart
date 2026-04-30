@@ -22,7 +22,7 @@ class WelcomeScreen extends StatelessWidget {
               height: 260,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.07),
+                color: Colors.white.withValues(alpha: 0.07),
               ),
             ),
           ),
@@ -34,7 +34,7 @@ class WelcomeScreen extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -47,7 +47,7 @@ class WelcomeScreen extends StatelessWidget {
               height: 220,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF7DF5A0).withOpacity(0.08),
+                color: const Color(0xFF7DF5A0).withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -118,7 +118,7 @@ class WelcomeScreen extends StatelessWidget {
                     'Join 50,000+ students finding\ngreat internships with AI.',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withOpacity(0.75),
+                      color: Colors.white.withValues(alpha: 0.75),
                       height: 1.5,
                     ),
                   )
@@ -131,10 +131,10 @@ class WelcomeScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: Colors.white.withOpacity(0.12)),
+                          color: Colors.white.withValues(alpha: 0.12)),
                     ),
                     child: const Column(
                       children: [
@@ -233,7 +233,7 @@ class _FeatureRow extends StatelessWidget {
           width: 30,
           height: 30,
           decoration: BoxDecoration(
-            color: AppColors.accent.withOpacity(0.2),
+            color: AppColors.accent.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: AppColors.accent, size: 16),

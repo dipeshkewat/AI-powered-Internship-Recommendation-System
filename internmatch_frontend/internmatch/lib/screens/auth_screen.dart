@@ -161,7 +161,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(Icons.arrow_back,
@@ -227,7 +227,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         'Join 50,000+ students finding great internships',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white.withOpacity(0.75),
+                          color: Colors.white.withValues(alpha: 0.75),
                         ),
                       ),
                     ],
@@ -383,10 +383,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             width: double.infinity,
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.error.withOpacity(0.08),
+                              color: AppColors.error.withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(10),
                               border:
-                                  Border.all(color: AppColors.error.withOpacity(0.3)),
+                                  Border.all(color: AppColors.error.withValues(alpha: 0.3)),
                             ),
                             child: Text(_error,
                                 style: const TextStyle(

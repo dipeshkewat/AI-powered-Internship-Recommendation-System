@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../data/internships_data.dart';
 import '../models/internship.dart';
 import '../models/user_profile.dart';
+import '../providers/app_providers.dart';
 import '../providers/user_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_router.dart';
@@ -59,9 +59,6 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(userProvider);
-    final unread = user.notifications.where((n) => !n.read).length;
-
     return Scaffold(
       backgroundColor: AppColors.background,
       body: IndexedStack(
@@ -79,7 +76,7 @@ class _MainShellState extends ConsumerState<MainShell> {
           color: AppColors.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, -2),
             ),
@@ -123,14 +120,60 @@ class DashboardTab extends ConsumerStatefulWidget {
 class _DashboardTabState extends ConsumerState<DashboardTab> {
   String _filter = 'All';
   static const _filters = ['All', 'Web Dev', 'App Dev', 'AI/ML', 'Data Science', 'DevOps'];
+  bool _showingRecommendations = false;
 
-  List<Internship> get _filteredData => _filter == 'All'
-      ? internshipData
-      : internshipData.where((i) => i.domain == _filter).toList();
+  List<Internship> _filterData(List<Internship> internships) => _filter == 'All'
+      ? internships
+      : internships.where((i) => i.domain == _filter).toList();
+
+  bool _needsProfileCompletion(UserProfile user) {
+    return user.skills.isEmpty ||
+        user.interests.isEmpty ||
+        user.preferredLocation.isEmpty ||
+        user.internshipType.isEmpty;
+  }
+
+  Future<void> _fetchRecommendations() async {
+    final user = ref.read(userProvider);
+
+    if (_needsProfileCompletion(user)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Complete your profile (skills, interests, and preferences) to get recommendations.',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      context.push(AppRoutes.onboarding);
+      return;
+    }
+
+    await ref.read(recommendationProvider.notifier).fetchRecommendations(user);
+
+    setState(() => _showingRecommendations = true);
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
+    final feedState = ref.watch(internshipFeedProvider);
+    final recommendationState = ref.watch(recommendationProvider);
+    
+    // Use recommendations if showing them, otherwise use feed
+    final displayData = _showingRecommendations 
+      ? recommendationState.internships 
+      : feedState.internships;
+    final isLoading = _showingRecommendations 
+      ? recommendationState.isLoading 
+      : feedState.isLoading;
+    final displayError = _showingRecommendations 
+      ? recommendationState.error 
+      : feedState.error;
+    
+    final filteredData = _filterData(displayData);
     final firstName = user.fullName.isNotEmpty
         ? user.fullName.split(' ').first
         : user.email.split('@').first;
@@ -162,7 +205,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
@@ -183,7 +226,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                                   Text(
                                     'Good ${_greeting()}, ',
                                     style: TextStyle(
-                                        color: Colors.white.withOpacity(0.8),
+                                        color: Colors.white.withValues(alpha: 0.8),
                                         fontSize: 13),
                                   ),
                                   const Text('🌟',
@@ -206,7 +249,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
+                                color: Colors.white.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(Icons.notifications_outlined,
@@ -245,21 +288,21 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                     Container(
                       height: 46,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: Colors.white.withOpacity(0.2)),
+                            color: Colors.white.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         children: [
                           const SizedBox(width: 14),
                           Icon(Icons.search,
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               size: 18),
                           const SizedBox(width: 10),
                           Text('Search internships, companies...',
                               style: TextStyle(
-                                  color: Colors.white.withOpacity(0.6),
+                                  color: Colors.white.withValues(alpha: 0.6),
                                   fontSize: 14)),
                         ],
                       ),
@@ -301,145 +344,178 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
             delegate: SliverChildListDelegate([
               // AI Banner
               Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [Color(0xFF1A2AD4), Color(0xFF2B3BF7)],
                   ),
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF7DF5A0).withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.auto_awesome,
-                                        color: Color(0xFF7DF5A0), size: 12),
-                                    SizedBox(width: 4),
-                                    Text('AI-Powered · Random Forest ML',
-                                        style: TextStyle(
-                                            color: Color(0xFF7DF5A0),
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          const Text('Find Your Best\nMatches',
+                          Icon(Icons.auto_awesome,
+                              color: Color(0xFF7DF5A0), size: 13),
+                          SizedBox(width: 5),
+                          Text('AI-Powered · Random Forest ML',
                               style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.2)),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Our ML model analyzes your profile to find top internships personalized for you.',
-                            style: TextStyle(
-                                color: Colors.white.withOpacity(0.75),
-                                fontSize: 12,
-                                height: 1.4),
-                          ),
-                          const SizedBox(height: 14),
-                          GestureDetector(
-                            onTap: () => context.push(AppRoutes.onboarding),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                    color: Colors.white.withOpacity(0.3)),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.settings_outlined,
-                                      color: Colors.white, size: 14),
-                                  SizedBox(width: 6),
-                                  Text('Get Recommendations →',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600)),
-                                ],
-                              ),
-                            ),
-                          ),
+                                  color: Color(0xFF7DF5A0),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.3)),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Icon(Icons.arrow_forward,
-                        color: Colors.white.withOpacity(0.2), size: 48),
+                    const SizedBox(height: 14),
+                    const Text('Find Your Best\nMatches',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            height: 1.2,
+                            letterSpacing: -0.5)),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Our ML model analyzes your profile to recommend internships that match your skills and interests.',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.78),
+                          fontSize: 13,
+                          height: 1.5,
+                          fontWeight: FontWeight.w400),
+                    ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: _fetchRecommendations,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF7DF5A0).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: const Color(0xFF7DF5A0).withValues(alpha: 0.4),
+                              width: 1.5),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.auto_awesome,
+                                color: Color(0xFF7DF5A0), size: 16),
+                            SizedBox(width: 8),
+                            Text('Get Recommendations',
+                                style: TextStyle(
+                                    color: Color(0xFF7DF5A0),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.2)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.2, end: 0),
 
               const SizedBox(height: 24),
 
-              // Trending Now
+              // Trending Now / Recommendations
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('🔥  Trending Now',
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary)),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('See all →',
-                        style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
+                  Text(
+                    _showingRecommendations ? '⭐ Your Recommendations' : '🔥  Trending Now',
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary),
                   ),
+                  if (_showingRecommendations)
+                    TextButton(
+                      onPressed: () => setState(() => _showingRecommendations = false),
+                      child: const Text('Back to Feed →',
+                          style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600)),
+                    )
+                  else
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text('See all →',
+                          style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600)),
+                    ),
                 ],
               ),
 
               SizedBox(
                 height: 180,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: internshipData.take(5).length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (ctx, i) {
-                    final item = internshipData[i];
-                    final color = _logoColor(item.logoColor);
-                    return TrendingCard(
-                      title: item.title,
-                      company: item.company,
-                      companyInitial: item.companyInitial,
-                      logoColor: color,
-                      stipend: item.stipend,
-                      locationType: item.locationType,
-                      duration: item.duration,
-                      onTap: () => showInternshipDetail(context, item),
-                    ).animate().fadeIn(delay: (i * 80).ms);
-                  },
-                ),
+                child: isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : displayError != null
+                    ? Center(
+                        child: Text(
+                          'Error: $displayError',
+                          style: const TextStyle(color: AppColors.textSecondary),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    : filteredData.isEmpty
+                    ? Center(
+                        child: Text(
+                          _showingRecommendations
+                            ? 'No recommendations found. Please update your profile.'
+                            : 'No internships available',
+                          style: const TextStyle(color: AppColors.textSecondary),
+                        ),
+                      )
+                    : ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: filteredData.take(5).length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 12),
+                        itemBuilder: (ctx, i) {
+                          final item = filteredData[i];
+                          final color = _logoColor(item.logoColor);
+                          return TrendingCard(
+                            title: item.title,
+                            company: item.company,
+                            companyInitial: item.companyInitial,
+                            logoColor: color,
+                            stipend: item.stipend,
+                            locationType: item.locationType,
+                            duration: item.duration,
+                            matchScore: _showingRecommendations ? item.matchScore : null,
+                            onTap: () => showInternshipDetail(context, item),
+                          ).animate().fadeIn(delay: (i * 80).ms);
+                        },
+                      ),
               ),
 
               const SizedBox(height: 24),
@@ -453,7 +529,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary)),
-                  Text('${_filteredData.length} results',
+                  Text('${filteredData.length} results',
                       style: const TextStyle(
                           fontSize: 13, color: AppColors.textSecondary)),
                 ],
@@ -497,7 +573,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
               const SizedBox(height: 16),
 
               // Internship list
-              ..._filteredData.map((item) {
+              ...filteredData.map((item) {
                 final user2 = ref.watch(userProvider);
                 final isSaved =
                     user2.savedInternships.contains(item.id);
@@ -564,21 +640,32 @@ class _SearchTabState extends ConsumerState<SearchTab> {
   final _ctrl = TextEditingController();
   String _query = '';
   String _filter = 'All';
+  bool _requestedInitialMatches = false;
 
   static const _filters = ['All', 'Web Dev', 'App Dev', 'AI/ML', 'Remote', 'On-site'];
 
-  List<Internship> get _results {
-    return internshipData.where((i) {
-      final matchQ = _query.isEmpty ||
-          i.title.toLowerCase().contains(_query.toLowerCase()) ||
-          i.company.toLowerCase().contains(_query.toLowerCase()) ||
-          i.requiredSkills
-              .any((s) => s.toLowerCase().contains(_query.toLowerCase()));
-      final matchF = _filter == 'All' ||
-          i.domain == _filter ||
-          i.locationType == _filter;
-      return matchQ && matchF;
-    }).toList();
+  String? _mapDomainFilter(String filter) {
+    switch (filter) {
+      case 'Web Dev':
+        return 'Web';
+      case 'App Dev':
+        return 'App Dev';
+      case 'AI/ML':
+        return 'AI/ML';
+      default:
+        return null;
+    }
+  }
+
+  String? _mapTypeFilter(String filter) {
+    switch (filter) {
+      case 'Remote':
+        return 'Remote';
+      case 'On-site':
+        return 'On-site';
+      default:
+        return null;
+    }
   }
 
   Color _logoColor(String hex) {
@@ -590,8 +677,21 @@ class _SearchTabState extends ConsumerState<SearchTab> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_requestedInitialMatches) {
+        _requestedInitialMatches = true;
+        ref.read(searchProvider.notifier).refreshTopMatches();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
+    final searchState = ref.watch(searchProvider);
+    final results = searchState.results;
 
     return SafeArea(
       child: Column(
@@ -611,7 +711,10 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                 // Search bar
                 TextField(
                   controller: _ctrl,
-                  onChanged: (v) => setState(() => _query = v),
+                  onChanged: (v) {
+                    setState(() => _query = v);
+                    ref.read(searchProvider.notifier).search(v);
+                  },
                   style: const TextStyle(fontSize: 14),
                   decoration: InputDecoration(
                     hintText: 'Search internships, companies...',
@@ -651,7 +754,13 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                     children: _filters.map((f) {
                       final isSel = _filter == f;
                       return GestureDetector(
-                        onTap: () => setState(() => _filter = f),
+                        onTap: () {
+                          setState(() => _filter = f);
+                          ref.read(searchProvider.notifier).applyFilter(
+                                domain: _mapDomainFilter(f),
+                                type: _mapTypeFilter(f),
+                              );
+                        },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           margin: const EdgeInsets.only(right: 8),
@@ -689,7 +798,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             child: Row(
               children: [
-                Text('${_results.length} results found',
+                Text('${results.length} results found',
                     style: const TextStyle(
                         fontSize: 13, color: AppColors.textSecondary)),
               ],
@@ -698,31 +807,39 @@ class _SearchTabState extends ConsumerState<SearchTab> {
 
           // List
           Expanded(
-            child: _results.isEmpty
-                ? const Center(
+            child: results.isEmpty
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_off_outlined,
+                        const Icon(Icons.search_off_outlined,
                             size: 48, color: AppColors.textMuted),
-                        SizedBox(height: 12),
-                        Text('No results found',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary)),
-                        Text('Try a different search',
-                            style: TextStyle(
-                                fontSize: 13, color: AppColors.textMuted)),
+                        const SizedBox(height: 12),
+                        Text(
+                          user.skills.isEmpty || user.interests.isEmpty
+                              ? 'Complete profile to get ML matches'
+                              : 'No results found',
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary),
+                        ),
+                        Text(
+                          user.skills.isEmpty || user.interests.isEmpty
+                              ? 'Add skills and interests in profile/onboarding'
+                              : 'Try a different search',
+                          style: const TextStyle(
+                              fontSize: 13, color: AppColors.textMuted),
+                        ),
                       ],
                     ),
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                    itemCount: _results.length,
+                    itemCount: results.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (ctx, i) {
-                      final item = _results[i];
+                      final item = results[i];
                       final isSaved =
                           user.savedInternships.contains(item.id);
                       return InternshipCard(
@@ -769,7 +886,8 @@ class SavedTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
-    final saved = internshipData
+    final searchState = ref.watch(searchProvider);
+    final saved = searchState.results
         .where((i) => user.savedInternships.contains(i.id))
         .toList();
 
@@ -791,7 +909,7 @@ class SavedTab extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text('${saved.length}',
@@ -887,7 +1005,7 @@ class AppliedTab extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text('${applied.length}',
@@ -977,7 +1095,7 @@ class _ApplicationCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
@@ -1012,7 +1130,7 @@ class _ApplicationCard extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(application.status,
@@ -1074,10 +1192,10 @@ class ProfileTab extends ConsumerWidget {
                     width: 74,
                     height: 74,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: Colors.white.withOpacity(0.4), width: 2),
+                          color: Colors.white.withValues(alpha: 0.4), width: 2),
                     ),
                     child: Center(
                       child: Text(initials,
@@ -1099,7 +1217,7 @@ class ProfileTab extends ConsumerWidget {
                   Text(
                     user.degree.isNotEmpty ? user.degree : 'Add your degree',
                     style: TextStyle(
-                        color: Colors.white.withOpacity(0.7), fontSize: 13),
+                        color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
                   ),
                   const SizedBox(height: 20),
 
@@ -1111,7 +1229,7 @@ class ProfileTab extends ConsumerWidget {
                         children: [
                           Text('Profile Completion',
                               style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 12)),
                           Text('${(completion * 100).round()}%',
                               style: const TextStyle(
@@ -1126,7 +1244,7 @@ class ProfileTab extends ConsumerWidget {
                         child: LinearProgressIndicator(
                           value: completion,
                           minHeight: 6,
-                          backgroundColor: Colors.white.withOpacity(0.2),
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
                           valueColor: const AlwaysStoppedAnimation<Color>(
                               Color(0xFF7DF5A0)),
                         ),
@@ -1211,12 +1329,12 @@ class ProfileTab extends ConsumerWidget {
                                         horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
                                       color: AppColors.primary
-                                          .withOpacity(0.08),
+                                          .withValues(alpha: 0.08),
                                       borderRadius:
                                           BorderRadius.circular(8),
                                       border: Border.all(
                                           color: AppColors.primary
-                                              .withOpacity(0.2)),
+                                              .withValues(alpha: 0.2)),
                                     ),
                                     child: Text(s,
                                         style: const TextStyle(
@@ -1244,10 +1362,10 @@ class ProfileTab extends ConsumerWidget {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 5),
                                     decoration: BoxDecoration(
-                                      color: AppColors.accent.withOpacity(0.08),
+                                      color: AppColors.accent.withValues(alpha: 0.08),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                          color: AppColors.accent.withOpacity(0.2)),
+                                          color: AppColors.accent.withValues(alpha: 0.2)),
                                     ),
                                     child: Text(i,
                                         style: const TextStyle(
@@ -1347,7 +1465,7 @@ class _ProfileStat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(label,
             style: TextStyle(
-                color: Colors.white.withOpacity(0.7), fontSize: 12)),
+                color: Colors.white.withValues(alpha: 0.7), fontSize: 12)),
       ],
     );
   }

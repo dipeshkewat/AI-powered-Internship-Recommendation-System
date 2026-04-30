@@ -16,11 +16,8 @@ void showInternshipDetail(BuildContext context, Internship internship) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withOpacity(0.5),
-    builder: (_) => ProviderScope(
-      parent: ProviderScope.containerOf(context),
-      child: _InternshipDetailSheet(internship: internship),
-    ),
+    barrierColor: Colors.black.withValues(alpha: 0.5),
+    builder: (_) => _InternshipDetailSheet(internship: internship),
   );
 }
 
@@ -98,8 +95,6 @@ class _InternshipDetailSheetState
     final user = ref.watch(userProvider);
     final isSaved = user.savedInternships.contains(widget.internship.id);
     final intern = widget.internship;
-    final screenH = MediaQuery.of(context).size.height;
-
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
       minChildSize: 0.5,
@@ -205,13 +200,13 @@ class _InternshipDetailSheetState
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                AppColors.accent.withOpacity(0.15),
-                                AppColors.accent.withOpacity(0.08),
+                                AppColors.accent.withValues(alpha: 0.15),
+                                AppColors.accent.withValues(alpha: 0.08),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: AppColors.accent.withOpacity(0.3)),
+                                color: AppColors.accent.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -392,11 +387,11 @@ class _InternshipDetailSheetState
                                       horizontal: 14, vertical: 8),
                                   decoration: BoxDecoration(
                                     color:
-                                        AppColors.primary.withOpacity(0.08),
+                                        AppColors.primary.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
                                         color: AppColors.primary
-                                            .withOpacity(0.2)),
+                                            .withValues(alpha: 0.2)),
                                   ),
                                   child: Text(s,
                                       style: const TextStyle(
@@ -421,12 +416,12 @@ class _InternshipDetailSheetState
                                         horizontal: 14, vertical: 8),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF8E24AA)
-                                          .withOpacity(0.08),
+                                          .withValues(alpha: 0.08),
                                       borderRadius:
                                           BorderRadius.circular(20),
                                       border: Border.all(
                                           color: const Color(0xFF8E24AA)
-                                              .withOpacity(0.2)),
+                                              .withValues(alpha: 0.2)),
                                     ),
                                     child: Text(t,
                                         style: const TextStyle(
@@ -453,7 +448,7 @@ class _InternshipDetailSheetState
                       top: BorderSide(color: AppColors.border, width: 1)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                       blurRadius: 12,
                       offset: const Offset(0, -4),
                     ),
@@ -476,12 +471,12 @@ class _InternshipDetailSheetState
                         height: 52,
                         decoration: BoxDecoration(
                           color: isSaved
-                              ? AppColors.primary.withOpacity(0.1)
+                              ? AppColors.primary.withValues(alpha: 0.1)
                               : AppColors.surface,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: isSaved
-                                ? AppColors.primary.withOpacity(0.3)
+                                ? AppColors.primary.withValues(alpha: 0.3)
                                 : AppColors.border,
                             width: 1.5,
                           ),
@@ -518,7 +513,7 @@ class _InternshipDetailSheetState
                                 color: (_applied
                                         ? AppColors.success
                                         : AppColors.primary)
-                                    .withOpacity(0.3),
+                                    .withValues(alpha: 0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -647,7 +642,7 @@ class _StatBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

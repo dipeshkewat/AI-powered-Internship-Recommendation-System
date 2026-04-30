@@ -104,12 +104,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  void _prev() {
-    if (_step > 0) {
-      _page.previousPage(duration: const Duration(milliseconds: 350), curve: Curves.easeInOut);
-    }
-  }
-
   Future<void> _finish() async {
     showDialog(
       context: context,
@@ -655,7 +649,7 @@ class _Step6Skills extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text('${skills.length} skills selected',
@@ -669,7 +663,7 @@ class _Step6Skills extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withOpacity(0.1),
+                  color: AppColors.accent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text('${tools.length} tools selected',
@@ -859,10 +853,6 @@ class _Step7Interests extends StatelessWidget {
     ('AI/ML', Icons.psychology_outlined, Color(0xFF22C55E)),
     ('Cybersecurity', Icons.security_outlined, Color(0xFFEF4444)),
     ('Cloud Computing', Icons.cloud_outlined, Color(0xFFF59E0B)),
-    ('DevOps', Icons.settings_outlined, Color(0xFF64748B)),
-    ('Blockchain', Icons.link_outlined, Color(0xFF6366F1)),
-    ('UI/UX Design', Icons.design_services_outlined, Color(0xFFEC4899)),
-    ('IoT', Icons.device_hub_outlined, Color(0xFF10B981)),
   ];
 
   void _toggle(String item) {
@@ -889,10 +879,10 @@ class _Step7Interests extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.07),
+                color: AppColors.primary.withValues(alpha: 0.07),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                    color: AppColors.primary.withOpacity(0.15)),
+                    color: AppColors.primary.withValues(alpha: 0.15)),
               ),
               child: Row(
                 children: [
@@ -922,7 +912,7 @@ class _Step7Interests extends StatelessWidget {
             crossAxisCount: 2,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            childAspectRatio: 1.5,
+            childAspectRatio: 1.35,
             children: _interests
                 .map((item) => InterestCard(
                       title: item.$1,

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../models/internship.dart';
 import '../models/user_profile.dart';
-import '../data/internships_data.dart';
+import 'user_provider.dart';
 
 // ─── CORE PROVIDERS ────────────────────────────────────────────────────────
 
@@ -84,19 +84,10 @@ class RecommendationNotifier extends StateNotifier<RecommendationState> {
         hasFetched: true,
       );
     } catch (e) {
-      // Fall back to local data with locally calculated match scores
-      final localRecommendations = getRecommendations(
-        skills: profile.skills,
-        tools: profile.tools,
-        interests: profile.interests,
-        preferredLocation: profile.preferredLocation,
-        internshipType: profile.internshipType,
-        duration: profile.duration,
-      );
       state = state.copyWith(
-        internships: localRecommendations,
+        internships: const [],
         isLoading: false,
-        error: 'Using offline data: ${e.toString()}',
+        error: 'Failed to fetch recommendations: ${e.toString()}',
         hasFetched: true,
       );
     }
@@ -155,110 +146,136 @@ class SearchState {
 
 class SearchNotifier extends StateNotifier<SearchState> {
   final ApiService _apiService;
+  final Ref _ref;
+  List<Internship> _allRecommended = const [];
 
-  SearchNotifier(this._apiService) : super(const SearchState()) {
+  SearchNotifier(this._apiService, this._ref) : super(const SearchState()) {
     _loadAll();
+  }
+
+  List<Internship> _applyLocalFilters(List<Internship> source) {
+    final query = state.query.trim().toLowerCase();
+    return source.where((i) {
+      final matchesQuery = query.isEmpty ||
+          i.title.toLowerCase().contains(query) ||
+          i.company.toLowerCase().contains(query) ||
+          i.requiredSkills.any((s) => s.toLowerCase().contains(query));
+      final matchesDomain = state.selectedDomain == null || i.domain == state.selectedDomain;
+      final matchesType = state.selectedType == null || i.locationType == state.selectedType;
+      return matchesQuery && matchesDomain && matchesType;
+    }).toList();
   }
 
   Future<void> _loadAll() async {
     state = state.copyWith(isLoading: true);
     try {
-      List<Internship> results;
-      try {
-        results = await _apiService.searchInternships();
-      } on DioException catch (e) {
-        if (e.response?.statusCode == 401) {
-          await _apiService.clearAuth();
-          results = await _apiService.searchInternships();
-        } else {
-          rethrow;
-        }
+      final profile = _ref.read(userProvider);
+      if (profile.skills.isEmpty || profile.interests.isEmpty) {
+        _allRecommended = const [];
+        state = state.copyWith(results: const [], isLoading: false);
+        return;
       }
-      state = state.copyWith(results: results, isLoading: false);
+
+      final cgpa = double.tryParse(profile.cgpa) ?? 0.0;
+      List<Internship> results = await _apiService.getRecommendations(
+        skills: profile.skills,
+        cgpa: cgpa,
+        interests: profile.interests,
+        preferredLocation: profile.preferredLocation,
+        preferredType: profile.internshipType.isNotEmpty ? profile.internshipType : 'Any',
+      );
+      results.sort((a, b) => b.matchScore.compareTo(a.matchScore));
+      _allRecommended = results.take(5).toList();
+      state = state.copyWith(
+        results: _applyLocalFilters(_allRecommended),
+        isLoading: false,
+      );
     } catch (e) {
-      print('API SEARCH ERROR (_loadAll): $e');
-      // Fall back to local data
-      state = state.copyWith(results: internshipData, isLoading: false);
+      _allRecommended = const [];
+      state = state.copyWith(results: const [], isLoading: false);
     }
   }
 
-  Future<void> search(String query) async {
-    state = state.copyWith(isLoading: true, query: query);
-    try {
-      Future<List<Internship>> searchApi() {
-        return _apiService.searchInternships(
-          query: query.isNotEmpty ? query : null,
-          domain: state.selectedDomain,
-          type: state.selectedType,
-        );
-      }
+  Future<void> refreshTopMatches() async {
+    await _loadAll();
+  }
 
-      List<Internship> results;
-      try {
-        results = await searchApi();
-      } on DioException catch (e) {
-        if (e.response?.statusCode == 401) {
-          await _apiService.clearAuth();
-          results = await searchApi();
-        } else {
-          rethrow;
-        }
-      }
-      state = state.copyWith(results: results, isLoading: false);
-    } catch (e) {
-      print('API SEARCH ERROR (search): $e');
-      // Filter local data
-      final filtered = internshipData.where((i) {
-        final matchQ = query.isEmpty ||
-            i.title.toLowerCase().contains(query.toLowerCase()) ||
-            i.company.toLowerCase().contains(query.toLowerCase());
-        final matchD = state.selectedDomain == null || i.domain == state.selectedDomain;
-        return matchQ && matchD;
-      }).toList();
-      state = state.copyWith(results: filtered, isLoading: false);
-    }
+  Future<void> search(String query) async {
+    state = state.copyWith(
+      isLoading: false,
+      query: query,
+      results: _applyLocalFilters(_allRecommended),
+    );
   }
 
   Future<void> applyFilter({String? domain, String? type}) async {
     state = state.copyWith(
-      isLoading: true,
+      isLoading: false,
       selectedDomain: domain,
       selectedType: type,
+      results: _applyLocalFilters(_allRecommended),
     );
-    try {
-      Future<List<Internship>> filterApi() {
-        return _apiService.searchInternships(
-          query: state.query.isNotEmpty ? state.query : null,
-          domain: domain,
-          type: type,
-        );
-      }
-
-      List<Internship> results;
-      try {
-        results = await filterApi();
-      } on DioException catch (e) {
-        if (e.response?.statusCode == 401) {
-          await _apiService.clearAuth();
-          results = await filterApi();
-        } else {
-          rethrow;
-        }
-      }
-      state = state.copyWith(results: results, isLoading: false);
-    } catch (_) {
-      final filtered = internshipData.where((i) {
-        final matchD = domain == null || i.domain == domain;
-        final matchT = type == null || i.locationType == type;
-        return matchD && matchT;
-      }).toList();
-      state = state.copyWith(results: filtered, isLoading: false);
-    }
   }
 }
 
 final searchProvider = StateNotifierProvider<SearchNotifier, SearchState>((ref) {
-  return SearchNotifier(ref.read(apiServiceProvider));
+  return SearchNotifier(ref.read(apiServiceProvider), ref);
+});
+
+// ─── DASHBOARD INTERNSHIP FEED (real backend data) ─────────────────────────
+
+class InternshipFeedState {
+  final List<Internship> internships;
+  final bool isLoading;
+  final String? error;
+
+  const InternshipFeedState({
+    this.internships = const [],
+    this.isLoading = false,
+    this.error,
+  });
+
+  InternshipFeedState copyWith({
+    List<Internship>? internships,
+    bool? isLoading,
+    String? error,
+  }) {
+    return InternshipFeedState(
+      internships: internships ?? this.internships,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+    );
+  }
+}
+
+class InternshipFeedNotifier extends StateNotifier<InternshipFeedState> {
+  final ApiService _apiService;
+
+  InternshipFeedNotifier(this._apiService) : super(const InternshipFeedState()) {
+    refresh();
+  }
+
+  Future<void> refresh() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final results = await _apiService.searchInternships(limit: 50);
+      state = state.copyWith(
+        internships: results,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        internships: const [],
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+}
+
+final internshipFeedProvider =
+    StateNotifierProvider<InternshipFeedNotifier, InternshipFeedState>((ref) {
+  return InternshipFeedNotifier(ref.read(apiServiceProvider));
 });
 
 // ─── BOOKMARKS ─────────────────────────────────────────────────────────────

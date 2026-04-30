@@ -33,7 +33,7 @@ class GradientButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withOpacity(0.35),
+              color: AppColors.primary.withValues(alpha: 0.35),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -193,7 +193,7 @@ class _SkillChipInputState extends State<SkillChipInput> {
                 label: Text(s, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12)),
                 deleteIcon: const Icon(Icons.close, size: 14, color: AppColors.textMuted),
                 onDeleted: () => _removeSkill(s),
-                backgroundColor: AppColors.primary.withOpacity(0.15),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                 side: const BorderSide(color: AppColors.primary, width: 0.5),
               );
             }).toList(),
@@ -220,9 +220,9 @@ class _SkillChipInputState extends State<SkillChipInput> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: AppColors.primary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
                 ),
                 child: const Icon(Icons.add, color: AppColors.primary, size: 18),
               ),
@@ -399,7 +399,7 @@ class InternshipCard extends StatelessWidget {
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -611,7 +611,7 @@ class StatTile extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: c.withOpacity(0.15),
+              color: c.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: c, size: 16),

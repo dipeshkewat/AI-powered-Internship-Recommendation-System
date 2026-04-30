@@ -1,10 +1,21 @@
+import 'package:flutter/foundation.dart';
+
 /// Single source of truth for magic strings, limits, and config values.
 /// Import this anywhere instead of hardcoding strings.
 class AppConstants {
   AppConstants._();
 
   // ─── API ───────────────────────────────────────────────────────────────────
-  static const String baseUrl = 'http://localhost:8000/api/v1';
+  static const String baseUrlOverride = String.fromEnvironment('API_BASE_URL');
+
+  static String get baseUrl {
+    if (baseUrlOverride.isNotEmpty) return baseUrlOverride;
+    if (kIsWeb) return 'http://localhost:8000/api/v1';
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000/api/v1';
+    }
+    return 'http://localhost:8000/api/v1';
+  }
 
   // Endpoint paths (append to baseUrl)
   static const String endpointLogin = '/auth/login';

@@ -1,12 +1,27 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/internship.dart';
 import '../models/user_profile.dart';
 
-// Change this to your machine's IP when running on a real device.
-// For Android emulator use: http://10.0.2.2:8000/api/v1
-// For iOS simulator or desktop use: http://localhost:8000/api/v1
-const String _baseUrl = 'http://localhost:8000/api/v1';
+// Optional override:
+// flutter run --dart-define=API_BASE_URL=http://<your-ip>:8000/api/v1
+const String _baseUrlOverride = String.fromEnvironment('API_BASE_URL');
+
+String _resolveBaseUrl() {
+  if (_baseUrlOverride.isNotEmpty) return _baseUrlOverride;
+
+  if (kIsWeb) {
+    return 'http://localhost:8000/api/v1';
+  }
+
+  // Android emulator maps host loopback to 10.0.2.2.
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    return 'http://10.0.2.2:8000/api/v1';
+  }
+
+  return 'http://localhost:8000/api/v1';
+}
 
 class ApiService {
   late final Dio _dio;
@@ -15,7 +30,7 @@ class ApiService {
   ApiService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: _baseUrl,
+        baseUrl: _resolveBaseUrl(),
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 30),
         headers: {

@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'Internships that match you.',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 14,
               ),
             ).animate().fadeIn(delay: 600.ms, duration: 400.ms),

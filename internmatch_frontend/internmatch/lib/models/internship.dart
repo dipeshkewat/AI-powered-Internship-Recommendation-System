@@ -56,7 +56,7 @@ class Internship {
     final companyInitial = company.isNotEmpty ? company[0].toUpperCase() : '?';
 
     // Map backend "type" (Remote/On-site/Hybrid) to locationType
-    final type = json['type'] as String? ?? 'Remote';
+    final type = json['type']?.toString() ?? 'Remote';
 
     // skills array from backend
     final rawSkills = json['skills'] as List<dynamic>? ?? [];
@@ -76,23 +76,24 @@ class Internship {
       '#4285F4', '#00A4EF', '#F7931E', '#FF9900',
       '#F80000', '#00C853', '#8E24AA', '#E91E63',
     ];
-    final colorIndex = (json['id'] as String? ?? '0').hashCode.abs() % colors.length;
+    final idValue = json['id']?.toString() ?? '';
+    final colorIndex = (idValue.isNotEmpty ? idValue : '0').hashCode.abs() % colors.length;
 
     return Internship(
-      id: json['id'] as String? ?? '',
-      title: json['title'] as String? ?? '',
+      id: idValue,
+      title: json['title']?.toString() ?? '',
       company: company,
       companyInitial: companyInitial,
       logoColor: colors[colorIndex],
-      location: json['location'] as String? ?? '',
+      location: json['location']?.toString() ?? '',
       locationType: type,
-      domain: json['domain'] as String? ?? '',
+      domain: json['domain']?.toString() ?? '',
       requiredSkills: skills,
       tools: const [],
-      duration: json['duration'] as String? ?? '',
+      duration: json['duration']?.toString() ?? '',
       type: type,
-      stipend: json['stipend'] as String? ?? '',
-      description: json['description'] as String? ?? '',
+      stipend: json['stipend']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
       responsibilities: const [],
       postedDaysAgo: daysAgo,
       applicants: 0,

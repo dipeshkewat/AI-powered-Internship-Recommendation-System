@@ -46,7 +46,8 @@ class InternshipListResponse(BaseModel):
 
 
 class RecommendationRequest(BaseModel):
-    skills: List[str] = Field(..., min_length=1)
+    # Allow empty skills so fallback recommendation logic can run for new users.
+    skills: List[str] = Field(default_factory=list)
     cgpa: float = Field(..., ge=0.0, le=10.0)
     interests: List[str] = []
     preferred_location: str = ""

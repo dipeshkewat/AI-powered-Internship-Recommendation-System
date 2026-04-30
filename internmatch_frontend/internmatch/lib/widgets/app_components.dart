@@ -68,7 +68,7 @@ class _PrimaryButtonState extends State<PrimaryButton>
             boxShadow: widget.onPressed != null
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.35),
+                      color: AppColors.primary.withValues(alpha: 0.35),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     )
@@ -309,7 +309,7 @@ class InternshipCard extends StatelessWidget {
           border: Border.all(color: AppColors.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -368,7 +368,7 @@ class InternshipCard extends StatelessWidget {
                     height: 34,
                     decoration: BoxDecoration(
                       color: isSaved
-                          ? AppColors.primary.withOpacity(0.08)
+                          ? AppColors.primary.withValues(alpha: 0.08)
                           : AppColors.background,
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -415,7 +415,7 @@ class InternshipCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.07),
+                          color: AppColors.primary.withValues(alpha: 0.07),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(s,
@@ -442,7 +442,7 @@ class InternshipCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withOpacity(0.12),
+                    color: AppColors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -493,6 +493,7 @@ class TrendingCard extends StatelessWidget {
   final String stipend;
   final String locationType;
   final String duration;
+  final int? matchScore;
   final VoidCallback? onTap;
 
   const TrendingCard({
@@ -504,6 +505,7 @@ class TrendingCard extends StatelessWidget {
     required this.stipend,
     required this.locationType,
     required this.duration,
+    this.matchScore,
     this.onTap,
   });
 
@@ -519,7 +521,7 @@ class TrendingCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              logoColor.withOpacity(0.85),
+              logoColor.withValues(alpha: 0.85),
               logoColor,
             ],
           ),
@@ -535,7 +537,7 @@ class TrendingCard extends StatelessWidget {
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: Colors.white.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -545,47 +547,103 @@ class TrendingCard extends StatelessWidget {
                             fontWeight: FontWeight.w700)),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(6),
+                if (matchScore != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 9, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7DF5A0).withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFF7DF5A0).withValues(alpha: 0.6),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          matchScore! >= 75
+                              ? Icons.thumb_up
+                              : matchScore! >= 60
+                                  ? Icons.check
+                                  : Icons.info_outline,
+                          color: const Color(0xFF7DF5A0),
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$matchScore%',
+                          style: const TextStyle(
+                              color: Color(0xFF7DF5A0),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      locationType,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500),
+                    ),
                   ),
-                  child: Text(
-                    locationType,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ),
               ],
             ),
-            const Spacer(),
-            Text(title,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis),
-            const SizedBox(height: 2),
-            Text(company,
-                style: TextStyle(
-                    color: Colors.white.withOpacity(0.75),
-                    fontSize: 11)),
             const SizedBox(height: 8),
-            Text(stipend,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600)),
-            const SizedBox(height: 2),
-            Text(duration,
-                style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 11)),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    company,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75), fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    stipend,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    duration,
+                    style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7), fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -619,7 +677,7 @@ class OptionCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.05)
+              ? AppColors.primary.withValues(alpha: 0.05)
               : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
@@ -634,7 +692,7 @@ class OptionCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withOpacity(0.1)
+                    ? AppColors.primary.withValues(alpha: 0.1)
                     : AppColors.background,
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -751,7 +809,7 @@ class InterestCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : AppColors.surface,
+          color: isSelected ? color.withValues(alpha: 0.1) : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? color : AppColors.border,
@@ -765,7 +823,7 @@ class InterestCard extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: isSelected ? color : color.withOpacity(0.12),
+                color: isSelected ? color : color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon,
@@ -880,7 +938,7 @@ class StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -894,7 +952,7 @@ class StatCard extends StatelessWidget {
             Text(label,
                 style: TextStyle(
                     fontSize: 11,
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center),
           ],

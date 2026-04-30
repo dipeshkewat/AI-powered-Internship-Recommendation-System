@@ -135,7 +135,7 @@ extension BuildContextX on BuildContext {
         content: Text(message,
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
         backgroundColor:
-            isError ? AppColors.error.withOpacity(0.9) : AppColors.surfaceElevated,
+            isError ? AppColors.error.withValues(alpha: 0.9) : AppColors.surfaceElevated,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16),

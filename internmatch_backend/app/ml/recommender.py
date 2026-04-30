@@ -139,6 +139,7 @@ class Recommender:
         """
         Simple rule-based scoring used when the trained model is absent.
         Maps known skill/interest keywords to domain probabilities.
+        If no skills/interests provided, returns uniform distribution.
         """
         domain_keywords = {
             "AI/ML":        {"ML", "scikit-learn", "PyTorch", "TensorFlow", "Python", "AI/ML"},
@@ -153,6 +154,12 @@ class Recommender:
             "Game Dev":     {"Game Dev"},
         }
         combined = set(skills) | set(interests)
+        
+        # If profile is empty, return uniform distribution across all domains
+        if not combined:
+            uniform_prob = 1.0 / len(domain_keywords)
+            return {d: uniform_prob for d in domain_keywords.keys()}
+        
         raw: Dict[str, float] = {}
         for domain, keywords in domain_keywords.items():
             raw[domain] = len(combined & keywords) + (0.3 if domain in interests else 0)
