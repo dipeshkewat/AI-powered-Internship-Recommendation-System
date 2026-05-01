@@ -16,7 +16,8 @@ venv/
 env/
 .env
 
-# ML artifacts (commented out to allow small models for deployment)
+# ML artifacts (large binary files – store in object storage for prod)
+# Temporarily allowing joblib files because our model is very small (~1MB) and needs to be deployed via GitHub
 # app/ml/artifacts/*.joblib
 
 # Uploads
