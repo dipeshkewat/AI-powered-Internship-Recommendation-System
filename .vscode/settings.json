@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/dipes/OneDrive/Desktop/collage mini project/internmatch/windows"
+    "cmake.sourceDirectory": "C:/Users/dipes/OneDrive/Desktop/InternMatch/internmatch_frontend/internmatch/windows",
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }

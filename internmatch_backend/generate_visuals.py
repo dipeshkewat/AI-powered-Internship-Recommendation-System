@@ -21,7 +21,7 @@ def plot_accuracy():
     fig, ax = plt.subplots(figsize=(10, 6))
     
     metrics = ['Training\nAccuracy', 'Test\nAccuracy', 'Macro Avg\nPrecision', 'Macro Avg\nRecall', 'Macro Avg\nF1-Score']
-    values = [88.04, 85.17, 87, 88, 87]
+    values = [92.15, 89.92, 90, 89, 90]
     colors = ['#2E86AB', '#A23B72', '#F18F01', '#C73E1D', '#6A994E']
     
     bars = ax.bar(metrics, values, color=colors, alpha=0.8, edgecolor='black', linewidth=2)
@@ -151,7 +151,7 @@ def plot_train_vs_test():
     
     # Left: Train vs Test Accuracy
     categories = ['Training\nAccuracy', 'Test\nAccuracy']
-    accuracies = [88.04, 85.17]
+    accuracies = [92.15, 89.92]
     colors_lr = ['#3498db', '#e74c3c']
     
     bars = ax1.bar(categories, accuracies, color=colors_lr, width=0.6, edgecolor='black', linewidth=2)
@@ -167,7 +167,7 @@ def plot_train_vs_test():
     ax1.text(0.5, 85.5, 'Good generalization', ha='center', fontsize=10, style='italic')
     
     # Right: Overfitting Gap
-    gap = 88.04 - 85.17
+    gap = 92.15 - 89.92
     ax2.bar(['Overfitting Gap'], [gap], color=['#9b59b6'], width=0.4, edgecolor='black', linewidth=2)
     ax2.text(0, gap/2, f'{gap:.2f}%', ha='center', va='center', fontsize=14, fontweight='bold', color='white')
     ax2.set_ylim(0, 5)
@@ -188,15 +188,15 @@ def plot_dataset_composition():
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(13, 10))
     
     # Dataset Split
-    sizes = [2400, 600]
+    sizes = [1067, 119]
     colors = ['#3498db', '#e74c3c']
-    ax1.pie(sizes, labels=['Training (80%)', 'Testing (20%)'], colors=colors, autopct='%1.1f%%',
+    ax1.pie(sizes, labels=['Training (90%)', 'Testing (10%)'], colors=colors, autopct='%1.1f%%',
             startangle=90, textprops={'fontsize': 11, 'weight': 'bold'})
-    ax1.set_title('Train-Test Split\n(3000 Samples)', fontsize=12, fontweight='bold')
+    ax1.set_title('Train-Test Split\n(1186 Samples)', fontsize=12, fontweight='bold')
     
     # Data Sources
     sources = ['User Profiles', 'Internship\nListings']
-    counts = [3000, 10000]
+    counts = [1186, 1719]
     colors = ['#2ecc71', '#f39c12']
     bars = ax2.bar(sources, counts, color=colors, edgecolor='black', linewidth=2)
     for bar, val in zip(bars, counts):
@@ -237,14 +237,14 @@ def plot_dataset_composition():
     • class_weight: balanced
     
     Training Data:
-    • Total samples: 3,000
-    • Training samples: 2,400 (80%)
-    • Test samples: 600 (20%)
+    • Total samples: 1,186
+    • Training samples: 1,067 (90%)
+    • Test samples: 119 (10%)
     • Classes: 10 domains
     
     Performance:
-    • Training Accuracy: 88.04%
-    • Test Accuracy: 85.17% ✓
+    • Training Accuracy: 92.15%
+    • Test Accuracy: 89.92% ✓
     • Avg F1-Score: 0.87
     """
     
@@ -360,9 +360,9 @@ def plot_key_metrics():
     
     # Metric cards
     metrics = [
-        {'title': 'Model Accuracy', 'value': '85.2%', 'color': '#2ecc71'},
-        {'title': 'Training Samples', 'value': '3,000', 'color': '#3498db'},
-        {'title': 'Internship Count', 'value': '10K+', 'color': '#e74c3c'},
+        {'title': 'Model Accuracy', 'value': '89.9%', 'color': '#2ecc71'},
+        {'title': 'Training Samples', 'value': '1,186', 'color': '#3498db'},
+        {'title': 'Internship Count', 'value': '1,186', 'color': '#e74c3c'},
         {'title': 'Domains', 'value': '15', 'color': '#f39c12'},
         {'title': 'Feature Dims', 'value': '45', 'color': '#9b59b6'},
         {'title': 'F1-Score', 'value': '0.87', 'color': '#1abc9c'},
