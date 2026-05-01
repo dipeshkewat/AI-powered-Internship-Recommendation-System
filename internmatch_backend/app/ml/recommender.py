@@ -36,11 +36,22 @@ ALL_SKILLS = [
 ]
 
 ALL_DOMAINS = [
-    "AI/ML", "App Dev", "Blockchain", "Cloud", "Cybersecurity", "Data Science",
-    "DevOps", "Game Dev", "UI/UX", "Web",
-    "Full Stack Development", "Android Development", "NLP / GenAI", 
-    "Embedded Systems / IoT", "Data Engineering", "Web Development", 
-    "iOS Development", "Computer Vision", "Machine Learning", "Cloud Computing",
+    # IMPORTANT: keep aligned with actual MongoDB `internships.domain` values.
+    # (see scripts/seed_db.py or db.distinct('domain'))
+    "Backend Development",
+    "Cloud Computing",
+    "Data Analytics",
+    "Desktop Application Dev",
+    "Frontend Development",
+    "Full Stack Development",
+    "Game Development",
+    "General",
+    "Information Security",
+    "Machine Learning",
+    "Mobile App Development",
+    "Network Security",
+    "Site Reliability Engineering",
+    "Web Development",
 ]
 
 ALL_LOCATIONS = ["Remote", "Bangalore, India", "Mumbai, India", "Hyderabad, India", "Other"]
@@ -142,16 +153,20 @@ class Recommender:
         If no skills/interests provided, returns uniform distribution.
         """
         domain_keywords = {
-            "AI/ML":        {"ML", "scikit-learn", "PyTorch", "TensorFlow", "Python", "AI/ML"},
-            "App Dev":      {"Flutter", "Dart", "Kotlin", "Swift", "Firebase", "App Dev"},
-            "Web":          {"React", "Node.js", "Next.js", "TypeScript", "GraphQL", "Web"},
-            "Data Science": {"Python", "SQL", "Pandas", "NumPy", "Data Science"},
-            "Cloud":        {"AWS", "GCP", "Docker", "Cloud"},
-            "DevOps":       {"Docker", "Git", "DevOps"},
-            "Cybersecurity":{"Cybersecurity"},
-            "UI/UX":        {"UI/UX"},
-            "Blockchain":   {"Blockchain"},
-            "Game Dev":     {"Game Dev"},
+            "Web Development": {"React", "Node.js", "Next.js", "TypeScript", "GraphQL", "Web Development"},
+            "Frontend Development": {"React", "TypeScript", "Frontend Development"},
+            "Backend Development": {"Node.js", "FastAPI", "Python", "Java", "Backend Development", "REST APIs"},
+            "Full Stack Development": {"React", "Node.js", "TypeScript", "Full Stack Development"},
+            "Machine Learning": {"ML", "scikit-learn", "PyTorch", "TensorFlow", "Python", "Machine Learning"},
+            "Data Analytics": {"Python", "SQL", "Data Analytics"},
+            "Cloud Computing": {"AWS", "GCP", "Docker", "Cloud Computing"},
+            "Site Reliability Engineering": {"Docker", "AWS", "Git", "Site Reliability Engineering"},
+            "Mobile App Development": {"Flutter", "Dart", "Kotlin", "Swift", "Firebase", "Mobile App Development"},
+            "Desktop Application Dev": {"Python", "Java", "Desktop Application Dev"},
+            "Information Security": {"Information Security"},
+            "Network Security": {"Network Security"},
+            "Game Development": {"Game Development"},
+            "General": {"General"},
         }
         combined = set(skills) | set(interests)
         

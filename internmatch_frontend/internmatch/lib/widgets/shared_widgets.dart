@@ -380,7 +380,7 @@ class InternshipCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   _MetaChip(
                     icon: Icons.work_outline,
-                    label: internship.type,
+                    label: internship.locationType,
                   ),
                   const SizedBox(width: 8),
                   _MetaChip(

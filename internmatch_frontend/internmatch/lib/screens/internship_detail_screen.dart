@@ -5,8 +5,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/internship.dart';
 import '../models/user_profile.dart';
+import '../providers/app_providers.dart';
 import '../providers/user_provider.dart';
 import '../theme/app_theme.dart';
 
@@ -35,6 +37,20 @@ class _InternshipDetailSheetState
   bool _applied = false;
   bool _applying = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _applied = widget.internship.hasApplied;
+  }
+
+  Future<void> _openApplyUrl() async {
+    final url = widget.internship.applyUrl.trim();
+    if (url.isEmpty) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   Color get _logoColor {
     try {
       return Color(
@@ -47,7 +63,19 @@ class _InternshipDetailSheetState
   void _handleApply() async {
     if (_applied) return;
     setState(() => _applying = true);
-    await Future.delayed(const Duration(milliseconds: 800)); // simulate API
+    // Open the original application form in the browser (Internshala, company site, etc.)
+    try {
+      await _openApplyUrl();
+    } catch (_) {}
+
+    // Record application in backend (so has_applied is consistent across app).
+    try {
+      await ref.read(apiServiceProvider).applyToInternship(widget.internship.id);
+    } catch (_) {
+      // If backend apply fails (e.g., not logged in), we still keep local UX feedback.
+    }
+
+    await Future.delayed(const Duration(milliseconds: 250));
     final notifier = ref.read(userProvider.notifier);
     notifier.addAppliedInternship(AppliedInternship(
       id: widget.internship.id,
@@ -79,6 +107,9 @@ class _InternshipDetailSheetState
         ),
       );
     }
+
+    // Refresh feed and (if user fetched) recommendations so they don't "disappear".
+    ref.read(internshipFeedProvider.notifier).refresh();
   }
 
   String _todayFormatted() {
@@ -261,7 +292,7 @@ class _InternshipDetailSheetState
                           _InfoTile(
                               icon: Icons.work_outline,
                               label: 'Job Type',
-                              value: intern.type),
+                              value: intern.jobType),
                           _InfoTile(
                               icon: Icons.category_outlined,
                               label: 'Domain',

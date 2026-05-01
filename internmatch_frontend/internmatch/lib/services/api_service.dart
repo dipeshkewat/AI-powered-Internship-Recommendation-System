@@ -152,6 +152,38 @@ class ApiService {
 
   // ─── RECOMMENDATIONS (ML endpoint) ─────────────────────────────────────────
 
+  List<String> _normalizeInterestsForBackend(List<String> interests) {
+    // Onboarding labels -> MongoDB domain labels
+    final mapped = <String>[];
+    for (final raw in interests) {
+      final s = raw.trim();
+      if (s.isEmpty) continue;
+      switch (s.toLowerCase()) {
+        case 'web dev':
+          mapped.add('Web Development');
+          break;
+        case 'app dev':
+          mapped.add('Mobile App Development');
+          break;
+        case 'data science':
+          mapped.add('Data Analytics');
+          break;
+        case 'ai/ml':
+          mapped.add('Machine Learning');
+          break;
+        case 'cybersecurity':
+          mapped.add('Information Security');
+          break;
+        case 'cloud computing':
+          mapped.add('Cloud Computing');
+          break;
+        default:
+          mapped.add(s);
+      }
+    }
+    return mapped.toSet().toList();
+  }
+
   /// Calls the FastAPI ML recommendation endpoint.
   /// Sends user profile features → receives ranked internships.
   Future<List<Internship>> getRecommendations({
@@ -164,7 +196,7 @@ class ApiService {
     final response = await _dio.post('/recommendations', data: {
       'skills': skills,
       'cgpa': cgpa,
-      'interests': interests,
+      'interests': _normalizeInterestsForBackend(interests),
       'preferred_location': preferredLocation,
       'preferred_type': preferredType,
     });

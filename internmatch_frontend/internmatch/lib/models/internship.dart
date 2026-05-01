@@ -6,6 +6,7 @@ class Internship {
   final String id;
   final String title;
   final String company;
+  final String companyLogo;
   final String companyInitial;
   final String logoColor;
   final String location;
@@ -14,9 +15,12 @@ class Internship {
   final List<String> requiredSkills;
   final List<String> tools;
   final String duration; // "1 month" | "3 months" | "6 months"
-  final String type; // "Full-time" | "Part-time"
+  // Backend uses "type" as work type (Remote/Hybrid/On-site). Keep "jobType"
+  // for UI compatibility, but don't duplicate values.
+  final String jobType; // "Internship" (default) or other
   final String stipend;
   final String description;
+  final String applyUrl;
   final List<String> responsibilities;
   final int postedDaysAgo;
   final int applicants;
@@ -29,6 +33,7 @@ class Internship {
     required this.id,
     required this.title,
     required this.company,
+    this.companyLogo = '',
     required this.companyInitial,
     required this.logoColor,
     required this.location,
@@ -37,9 +42,10 @@ class Internship {
     required this.requiredSkills,
     this.tools = const [],
     required this.duration,
-    required this.type,
+    this.jobType = 'Internship',
     required this.stipend,
     required this.description,
+    this.applyUrl = '',
     this.responsibilities = const [],
     required this.postedDaysAgo,
     required this.applicants,
@@ -54,6 +60,7 @@ class Internship {
     // company_logo → derive companyInitial and logoColor
     final company = (json['company'] as String? ?? '');
     final companyInitial = company.isNotEmpty ? company[0].toUpperCase() : '?';
+    final companyLogo = json['company_logo']?.toString() ?? '';
 
     // Map backend "type" (Remote/On-site/Hybrid) to locationType
     final type = json['type']?.toString() ?? 'Remote';
@@ -83,6 +90,7 @@ class Internship {
       id: idValue,
       title: json['title']?.toString() ?? '',
       company: company,
+      companyLogo: companyLogo,
       companyInitial: companyInitial,
       logoColor: colors[colorIndex],
       location: json['location']?.toString() ?? '',
@@ -91,9 +99,10 @@ class Internship {
       requiredSkills: skills,
       tools: const [],
       duration: json['duration']?.toString() ?? '',
-      type: type,
+      jobType: 'Internship',
       stipend: json['stipend']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
+      applyUrl: json['apply_url']?.toString() ?? '',
       responsibilities: const [],
       postedDaysAgo: daysAgo,
       applicants: 0,
@@ -115,6 +124,7 @@ class Internship {
         'stipend': stipend,
         'domain': domain,
         'description': description,
+        'apply_url': applyUrl,
         'match_score': matchScore,
         'is_bookmarked': isBookmarked,
         'has_applied': hasApplied,
@@ -132,9 +142,10 @@ class Internship {
     List<String>? requiredSkills,
     List<String>? tools,
     String? duration,
-    String? type,
+    String? jobType,
     String? stipend,
     String? description,
+    String? applyUrl,
     List<String>? responsibilities,
     int? postedDaysAgo,
     int? applicants,
@@ -155,9 +166,10 @@ class Internship {
       requiredSkills: requiredSkills ?? this.requiredSkills,
       tools: tools ?? this.tools,
       duration: duration ?? this.duration,
-      type: type ?? this.type,
+      jobType: jobType ?? this.jobType,
       stipend: stipend ?? this.stipend,
       description: description ?? this.description,
+      applyUrl: applyUrl ?? this.applyUrl,
       responsibilities: responsibilities ?? this.responsibilities,
       postedDaysAgo: postedDaysAgo ?? this.postedDaysAgo,
       applicants: applicants ?? this.applicants,

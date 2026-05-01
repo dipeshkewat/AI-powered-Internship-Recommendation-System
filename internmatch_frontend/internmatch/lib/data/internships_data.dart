@@ -13,7 +13,7 @@ final List<Internship> internshipData = [
     requiredSkills: ["React", "JavaScript", "CSS"],
     tools: ["Git/Github", "Docker"],
     duration: "3 months",
-    type: "Full-time",
+    jobType: "Internship",
     stipend: "₹30,000/month",
     description: "Join Google's engineering team and build cutting-edge web applications used by billions.",
     responsibilities: [
@@ -39,7 +39,7 @@ final List<Internship> internshipData = [
     requiredSkills: ["Python", "Machine Learning", "SQL"],
     tools: ["Docker", "AWS", "Git/Github"],
     duration: "6 months",
-    type: "Full-time",
+    jobType: "Internship",
     stipend: "₹40,000/month",
     description: "Work alongside top ML researchers at Microsoft to build intelligent systems at scale.",
     responsibilities: [
@@ -65,7 +65,7 @@ final List<Internship> internshipData = [
     requiredSkills: ["Kotlin", "Java", "Android SDK"],
     tools: ["Git", "Firebase"],
     duration: "3 months",
-    type: "Full-time",
+    jobType: "Internship",
     stipend: "₹25,000/month",
     description: "Build mobile experiences for millions of users on the Flipkart platform.",
     responsibilities: [
@@ -91,7 +91,7 @@ final List<Internship> internshipData = [
     requiredSkills: ["Python", "SQL", "Data Analysis"],
     tools: ["AWS", "Spark", "Git"],
     duration: "6 months",
-    type: "Full-time",
+    jobType: "Internship",
     stipend: "₹35,000/month",
     description: "Analyze and process massive datasets to drive business insights.",
     responsibilities: [
@@ -117,7 +117,7 @@ final List<Internship> internshipData = [
     requiredSkills: ["Network Security", "Linux", "Python"],
     tools: ["Wireshark", "Burp Suite", "Git"],
     duration: "3 months",
-    type: "Full-time",
+    jobType: "Internship",
     stipend: "₹28,000/month",
     description: "Help secure Oracle's infrastructure and protect against threats.",
     responsibilities: [
@@ -143,7 +143,7 @@ final List<Internship> internshipData = [
     requiredSkills: ["Docker", "Kubernetes", "Linux"],
     tools: ["AWS", "Jenkins", "Git"],
     duration: "6 months",
-    type: "Full-time",
+    jobType: "Internship",
     stipend: "₹32,000/month",
     description: "Manage cloud infrastructure and deploy applications at scale.",
     responsibilities: [

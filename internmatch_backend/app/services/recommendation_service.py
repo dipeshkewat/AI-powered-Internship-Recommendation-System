@@ -23,6 +23,41 @@ from app.schemas.internship import InternshipResponse, RecommendationRequest
 from app.services.internship_service import _doc_to_response, _user_meta
 
 
+def _normalize_domain(domain: str) -> str:
+    """
+    Normalize MongoDB internship domains into the same label set used by the
+    recommender. This prevents 'random' rankings when domains don't match keys.
+    """
+    d = (domain or "").strip()
+    if not d:
+        return ""
+
+    mapping = {
+        # Web bucket
+        "Web Development": "Web Development",
+        "Frontend Development": "Web Development",
+        "Backend Development": "Web Development",
+        "Full Stack Development": "Web Development",
+        # ML / DS
+        "Machine Learning": "Machine Learning",
+        "Data Analytics": "Data Analytics",
+        # App dev
+        "Mobile App Development": "Mobile App Development",
+        "Desktop Application Dev": "Desktop Application Dev",
+        # Cloud / SRE
+        "Cloud Computing": "Cloud Computing",
+        "Site Reliability Engineering": "Site Reliability Engineering",
+        # Security
+        "Information Security": "Information Security",
+        "Network Security": "Network Security",
+        # Games
+        "Game Development": "Game Development",
+        # General (downweighted in scoring unless user wants it)
+        "General": "General",
+    }
+    return mapping.get(d, d)
+
+
 def _compute_score(
     domain_probs: dict,
     internship_domain: str,
@@ -35,7 +70,13 @@ def _compute_score(
     Convert a raw domain probability (0–1) into a 0–100 match score,
     with small bonuses for location / type alignment.
     """
-    base = domain_probs.get(internship_domain, 0.0) * 100
+    norm_domain = _normalize_domain(internship_domain)
+    base = domain_probs.get(norm_domain, 0.0) * 100
+
+    # Strongly downweight "General" unless the user explicitly expressed it.
+    # This avoids showing Marketing/Sales as top matches for CS profiles.
+    if norm_domain == "General" and base > 0:
+        base *= 0.35
 
     # Location boost (+5)
     if preferred_location and preferred_location.lower() in internship_location.lower():

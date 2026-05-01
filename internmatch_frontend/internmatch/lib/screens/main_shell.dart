@@ -122,9 +122,29 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
   static const _filters = ['All', 'Web Dev', 'App Dev', 'AI/ML', 'Data Science', 'DevOps'];
   bool _showingRecommendations = false;
 
-  List<Internship> _filterData(List<Internship> internships) => _filter == 'All'
-      ? internships
-      : internships.where((i) => i.domain == _filter).toList();
+  String? _mapDomainFilter(String filter) {
+    switch (filter) {
+      case 'Web Dev':
+        return 'Web';
+      case 'App Dev':
+        return 'App Dev';
+      case 'AI/ML':
+        return 'AI/ML';
+      case 'Data Science':
+        return 'Data Science';
+      case 'DevOps':
+        return 'DevOps';
+      default:
+        return null;
+    }
+  }
+
+  List<Internship> _filterData(List<Internship> internships) {
+    if (_filter == 'All') return internships;
+    final mapped = _mapDomainFilter(_filter);
+    if (mapped == null) return internships;
+    return internships.where((i) => i.domain == mapped).toList();
+  }
 
   bool _needsProfileCompletion(UserProfile user) {
     return user.skills.isEmpty ||
@@ -323,10 +343,10 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
                           label: 'Saved',
                         ),
                         const SizedBox(width: 8),
-                        const StatCard(
-                          value: '85%',
+                        StatCard(
+                          value: '${_calcMatchRate(displayData)}%',
                           label: 'Match Rate',
-                          textColor: Color(0xFF7DF5A0),
+                          textColor: const Color(0xFF7DF5A0),
                         ),
                       ],
                     ),
@@ -624,6 +644,13 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
       return AppColors.primary;
     }
   }
+
+  int _calcMatchRate(List<Internship> data) {
+    final scores = data.where((i) => i.matchScore > 0).map((i) => i.matchScore).toList();
+    if (scores.isEmpty) return 0;
+    final avg = scores.reduce((a, b) => a + b) / scores.length;
+    return avg.round().clamp(0, 100);
+  }
 }
 
 // ============================================================
@@ -692,6 +719,7 @@ class _SearchTabState extends ConsumerState<SearchTab> {
     final user = ref.watch(userProvider);
     final searchState = ref.watch(searchProvider);
     final results = searchState.results;
+    final searchError = searchState.error;
 
     return SafeArea(
       child: Column(
@@ -824,13 +852,25 @@ class _SearchTabState extends ConsumerState<SearchTab> {
                               fontWeight: FontWeight.w600,
                               color: AppColors.textSecondary),
                         ),
-                        Text(
-                          user.skills.isEmpty || user.interests.isEmpty
-                              ? 'Add skills and interests in profile/onboarding'
-                              : 'Try a different search',
-                          style: const TextStyle(
-                              fontSize: 13, color: AppColors.textMuted),
-                        ),
+                        if (searchError != null) ...[
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 28),
+                            child: Text(
+                              searchError,
+                              style: const TextStyle(
+                                  fontSize: 12, color: AppColors.textMuted),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ] else
+                          Text(
+                            user.skills.isEmpty || user.interests.isEmpty
+                                ? 'Add skills and interests in profile/onboarding'
+                                : 'Try a different search',
+                            style: const TextStyle(
+                                fontSize: 13, color: AppColors.textMuted),
+                          ),
                       ],
                     ),
                   )

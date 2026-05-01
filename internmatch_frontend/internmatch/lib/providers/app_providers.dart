@@ -118,6 +118,7 @@ class SearchState {
   final String query;
   final String? selectedDomain;
   final String? selectedType;
+  final String? error;
 
   const SearchState({
     this.results = const [],
@@ -125,6 +126,7 @@ class SearchState {
     this.query = '',
     this.selectedDomain,
     this.selectedType,
+    this.error,
   });
 
   SearchState copyWith({
@@ -133,6 +135,7 @@ class SearchState {
     String? query,
     String? selectedDomain,
     String? selectedType,
+    String? error,
   }) {
     return SearchState(
       results: results ?? this.results,
@@ -140,6 +143,7 @@ class SearchState {
       query: query ?? this.query,
       selectedDomain: selectedDomain ?? this.selectedDomain,
       selectedType: selectedType ?? this.selectedType,
+      error: error,
     );
   }
 }
@@ -147,10 +151,35 @@ class SearchState {
 class SearchNotifier extends StateNotifier<SearchState> {
   final ApiService _apiService;
   final Ref _ref;
-  List<Internship> _allRecommended = const [];
+  List<Internship> _all = const [];
 
   SearchNotifier(this._apiService, this._ref) : super(const SearchState()) {
     _loadAll();
+
+    // IMPORTANT: SearchTab is kept alive inside an IndexedStack.
+    // So initState() runs only once, and recommendations won't refresh after
+    // onboarding/profile updates unless we listen for profile changes here.
+    _ref.listen<UserProfile>(
+      userProvider,
+      (prev, next) {
+        final prevSkills = prev?.skills ?? const <String>[];
+        final prevInterests = prev?.interests ?? const <String>[];
+
+        final profileBecameReady = (prevSkills.isEmpty || prevInterests.isEmpty) &&
+            next.skills.isNotEmpty &&
+            next.interests.isNotEmpty;
+
+        final profileChanged = prevSkills.join('|') != next.skills.join('|') ||
+            prevInterests.join('|') != next.interests.join('|') ||
+            (prev?.preferredLocation ?? '') != next.preferredLocation ||
+            (prev?.internshipType ?? '') != next.internshipType ||
+            (prev?.cgpa ?? '') != next.cgpa;
+
+        if (profileBecameReady || profileChanged) {
+          refreshTopMatches();
+        }
+      },
+    );
   }
 
   List<Internship> _applyLocalFilters(List<Internship> source) {
@@ -167,32 +196,23 @@ class SearchNotifier extends StateNotifier<SearchState> {
   }
 
   Future<void> _loadAll() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, error: null);
     try {
-      final profile = _ref.read(userProvider);
-      if (profile.skills.isEmpty || profile.interests.isEmpty) {
-        _allRecommended = const [];
-        state = state.copyWith(results: const [], isLoading: false);
-        return;
-      }
-
-      final cgpa = double.tryParse(profile.cgpa) ?? 0.0;
-      List<Internship> results = await _apiService.getRecommendations(
-        skills: profile.skills,
-        cgpa: cgpa,
-        interests: profile.interests,
-        preferredLocation: profile.preferredLocation,
-        preferredType: profile.internshipType.isNotEmpty ? profile.internshipType : 'Any',
-      );
-      results.sort((a, b) => b.matchScore.compareTo(a.matchScore));
-      _allRecommended = results.take(5).toList();
+      // Search should work even for new users with empty profiles.
+      // Use the internships listing endpoint as the data source.
+      _all = await _apiService.searchInternships(limit: 50);
       state = state.copyWith(
-        results: _applyLocalFilters(_allRecommended),
+        results: _applyLocalFilters(_all),
         isLoading: false,
+        error: null,
       );
     } catch (e) {
-      _allRecommended = const [];
-      state = state.copyWith(results: const [], isLoading: false);
+      _all = const [];
+      state = state.copyWith(
+        results: const [],
+        isLoading: false,
+        error: 'Failed to load matches: ${e.toString()}',
+      );
     }
   }
 
@@ -204,7 +224,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
     state = state.copyWith(
       isLoading: false,
       query: query,
-      results: _applyLocalFilters(_allRecommended),
+      results: _applyLocalFilters(_all),
     );
   }
 
@@ -213,7 +233,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
       isLoading: false,
       selectedDomain: domain,
       selectedType: type,
-      results: _applyLocalFilters(_allRecommended),
+      results: _applyLocalFilters(_all),
     );
   }
 }

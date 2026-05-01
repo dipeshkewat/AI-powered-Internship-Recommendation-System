@@ -10,11 +10,12 @@ class AppConstants {
 
   static String get baseUrl {
     if (baseUrlOverride.isNotEmpty) return baseUrlOverride;
+    // When testing on a physical device over WiFi, use the PC's local IP address
     if (kIsWeb) return 'http://localhost:8000/api/v1';
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8000/api/v1';
+      return 'http://192.168.1.100:8000/api/v1'; // PC's IP address on local network
     }
-    return 'http://localhost:8000/api/v1';
+    return 'http://192.168.1.100:8000/api/v1';
   }
 
   // Endpoint paths (append to baseUrl)
