@@ -20,13 +20,20 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _boot() async {
-    final storage = await StorageService.getInstance();
-    await Future.delayed(const Duration(milliseconds: 2000));
-    if (!mounted) return;
-    if (storage.onboardingDone) {
-      context.go(AppRoutes.mainShell);
-    } else {
-      context.go(AppRoutes.welcome);
+    try {
+      final storage = await StorageService.getInstance();
+      await Future.delayed(const Duration(milliseconds: 2000));
+      if (!mounted) return;
+      if (storage.onboardingDone) {
+        context.go(AppRoutes.mainShell);
+      } else {
+        context.go(AppRoutes.welcome);
+      }
+    } catch (e) {
+      debugPrint('Error during boot: $e');
+      if (mounted) {
+        context.go(AppRoutes.welcome);
+      }
     }
   }
 

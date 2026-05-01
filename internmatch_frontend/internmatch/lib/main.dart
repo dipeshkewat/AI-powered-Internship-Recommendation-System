@@ -5,20 +5,21 @@ import 'package:internmatch/theme/app_theme.dart';
 import 'package:internmatch/utils/app_router.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: AppColors.background,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ),
-  );
+    // Set orientation but catch errors
+    try {
+      await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    } catch (e) {
+      debugPrint('Orientation error: $e');
+    }
 
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
-  runApp(const ProviderScope(child: InternMatchApp()));
+    runApp(const ProviderScope(child: InternMatchApp()));
+  } catch (e, stack) {
+    debugPrint('Fatal error in main: $e');
+    debugPrint(stack.toString());
+  }
 }
 
 class InternMatchApp extends ConsumerWidget {
